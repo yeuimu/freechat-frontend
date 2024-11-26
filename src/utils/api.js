@@ -2,7 +2,7 @@ import axios from 'axios';
 
 // 创建 Axios 实例
 const apiClient = axios.create({
-  baseURL: 'http://43.153.155.176/api', // 替换为您的后端 API 根地址
+  baseURL: 'https://xymyfh.fun/api', // 替换为您的后端 API 根地址
   timeout: 10000, // 请求超时时间
   headers: {
     'Content-Type': 'application/json',

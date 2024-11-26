@@ -1,5 +1,5 @@
 import { defineStore } from 'pinia'
-import { generatePemKeyPair } from '@/utils/encryption'
+import { generatePemKeyPair, generateSignature } from '@/utils/encryption'
 import { computed, ref } from 'vue'
 
 export const useUserStore = defineStore(
@@ -16,42 +16,10 @@ export const useUserStore = defineStore(
       privateKey.value = pri
     }
 
-    const generateSignature = computed(async () => {
+    const signature = computed(async () => {
       if (privateKey.value == null) return ''
 
-      // 提取 PEM 格式中的密钥
-      const keyData = privateKey.value.replace(
-        /-----BEGIN PRIVATE KEY-----|-----END PRIVATE KEY-----|\n/g,
-        '',
-      )
-      const privateKeyBuffer = Uint8Array.from(atob(keyData), (c) => c.charCodeAt(0)).buffer
-
-      // 导入私钥
-      const importedPrivateKey = await crypto.subtle.importKey(
-        'pkcs8',
-        privateKeyBuffer,
-        {
-          name: 'RSA-PSS',
-          hash: { name: 'SHA-256' },
-        },
-        false,
-        ['sign'],
-      )
-
-      // 使用私钥签名消息
-      const encoder = new TextEncoder()
-      const data = encoder.encode(nickname.value)
-      const signature = await crypto.subtle.sign(
-        {
-          name: 'RSA-PSS',
-          saltLength: 32,
-        },
-        importedPrivateKey,
-        data,
-      )
-
-      // 返回 Base64 编码的签名
-      return btoa(String.fromCharCode(...new Uint8Array(signature)))
+      return generateSignature(nickname.value, privateKey.value)
     })
 
     const setNickname = (nname) => (nickname.value = nname)
@@ -69,7 +37,7 @@ export const useUserStore = defineStore(
       setNickname,
       clearUserData,
       generateKeys,
-      generateSignature,
+      signature,
     }
   },
   {

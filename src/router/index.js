@@ -18,7 +18,7 @@ const router = createRouter({
 
 router.beforeEach(async (to, from, next) => {
   const userStore = useUserStore()
-  const signature = await userStore.generateSignature
+  const signature = await userStore.signature
   const { nickname, privateKey, publicKey } = userStore
 
   if (nickname === null || privateKey === null || publicKey === null) {
