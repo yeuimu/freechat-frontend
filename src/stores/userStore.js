@@ -5,9 +5,9 @@ import { computed, ref } from 'vue'
 export const useUserStore = defineStore(
   'user',
   () => {
-    const nickname = ref('')
-    const publicKey = ref('')
-    const privateKey = ref('')
+    const nickname = ref(null)
+    const publicKey = ref(null)
+    const privateKey = ref(null)
 
     const generateKeys = async () => {
       const { pub, pri } = await generatePemKeyPair()
@@ -17,6 +17,8 @@ export const useUserStore = defineStore(
     }
 
     const generateSignature = computed(async () => {
+      if (privateKey.value == null) return ''
+
       // 提取 PEM 格式中的密钥
       const keyData = privateKey.value.replace(
         /-----BEGIN PRIVATE KEY-----|-----END PRIVATE KEY-----|\n/g,

@@ -1,5 +1,5 @@
 <template>
-  <div class="flex justify-between min-h-full">
+  <div class="h-full w-screen flex justify-between">
     <!-- 左侧聊天列表 -->
     <div class="w-1/5 bg-gray-100 border-r">
       <div class="p-4 flex flex-col justify-center items-center border-b">
