@@ -15,6 +15,11 @@ import { ref } from 'vue';
 import { deleteUser } from '@/api/userApi';
 import { useRouter } from 'vue-router'
 
+import {useToast} from 'vue-toast-notification';
+import 'vue-toast-notification/dist/theme-sugar.css';
+
+const $toast = useToast();
+
 const userStore = useUserStore();
 const nickname = ref('');
 const router = useRouter();
@@ -48,10 +53,12 @@ const register = async () => {
     // 调用注册 API
     const response = await registerUser(userStore.nickname, userStore.publicKey);
     console.log('注册成功:', response.message);
+    $toast.success(`注册成功: ${response.message}`);
 
     router.push('/chat');
   } catch (error) {
     console.error('注册失败:', error.response?.data || error.message);
+    $toast.error(`注册失败: ${error.response?.data || error.message}`, {duration: 30000});
     userStore.clearUserData();
   }
 };
