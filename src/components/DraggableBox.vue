@@ -5,7 +5,7 @@
       <div class="h-1 w-12 bg-gray-400 rounded"></div>
     </div>
     <!-- 消息框 -->
-    <div class="w-full rounded-box bg-white flex justify-center items-center" :style="{ height: `${height}px` }">
+    <div class="w-full rounded-box bg-base-300 flex justify-center items-center" :style="{ height: `${height}px` }">
       <!-- 插槽 -->
       <slot></slot>
     </div>
