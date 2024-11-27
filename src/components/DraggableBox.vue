@@ -1,5 +1,5 @@
 <template>
-  <div class="flex space-x-2 flex-col items-center">
+  <div class="w-11/12 flex flex-col items-center">
     <!-- 拖拽条 -->
     <div class="drag-bar cursor-move flex items-center justify-center" @mousedown="startDragging">
       <div class="h-1 w-12 bg-gray-400 rounded"></div>
