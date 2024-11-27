@@ -70,7 +70,7 @@
           <!-- 主题切换 -->
           <label class="swap swap-rotate mt-1">
             <!-- this hidden checkbox controls the state -->
-            <input type="checkbox" class="theme-controller" value="dark" />
+            <input type="checkbox" class="theme-controller" @click="toggleTheme" />
             <!-- sun icon -->
             <svg class="swap-off h-6 w-6 fill-current" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24">
               <path
@@ -89,7 +89,7 @@
 </template>
 
 <script setup>
-import { ref } from 'vue'
+import { ref, onMounted } from 'vue'
 import { useSocketStore } from '@/stores/socketStore'
 import { useUserStore } from '@/stores/userStore'
 import { useChatStore } from '@/stores/chatStore'
@@ -111,6 +111,13 @@ const messages = ref([])
 //     userStore.signature
 //   )
 // })
+
+const isDark = ref(false);
+const toggleTheme = () => {
+  const htmlElement = document.documentElement;
+  isDark.value = !isDark.value;
+  htmlElement.setAttribute('data-theme', isDark.value ? 'dark' : 'light');
+};
 
 // const sendMessage = () => {
 //   if (!messageInput.value.trim()) return
