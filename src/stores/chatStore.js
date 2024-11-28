@@ -7,6 +7,7 @@ export const useChatStore = defineStore(
     const chatConversations = ref([
       {
         conversationName: 'nm',
+        type: 'private',
         messages: [
           {
             sender: 'me',
@@ -20,10 +21,12 @@ export const useChatStore = defineStore(
       },
       {
         conversationName: 'group1',
+        type: 'group',
         messages: [
           {
             sender: 'fdsafds',
             content: '你好',
+            id: null,
           },
           {
             sender: 'nm',
@@ -46,20 +49,38 @@ export const useChatStore = defineStore(
         publicKey: 'fjdlafjlksd',
       },
     ])
-    const currentConversation = ref(1)
-    const currentMessages = computed(() => {
-      return currentConversation.value !== null
-        ? chatConversations.value[currentConversation.value].messages
-        : []
-    })
-    const setCurrentConversation = (i) => (currentConversation.value = i)
+    const currentConversationIndex = ref(1)
+    const currentConversation = computed(() => chatConversations.value[currentConversationIndex.value])
+    const currentMessages = computed(() => currentConversation.value.messages);
+    const setCurrentConversation = (i) => (currentConversationIndex.value = i);
+    const addConversation = (name, key, type) => {
+      let index = chatConversations.value.findIndex((c) => c.conversationName === name)
+      if (index !== -1) return index - 1
+
+      index = chatConversations.value.push({
+        conversationName: name,
+        type,
+        messages: [],
+      })
+      userList.value.push({ userName: name, publicKey: key }) - 1
+      return index
+    }
+    const addMessage = (sender, content) => {
+      currentConversation.value.messages.push({
+        sender,
+        content,
+      })
+    }
 
     return {
       chatConversations,
       userList,
+      currentConversationIndex,
       currentConversation,
       currentMessages,
       setCurrentConversation,
+      addConversation,
+      addMessage,
     }
   },
   {

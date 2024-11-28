@@ -1,22 +1,25 @@
 <template>
   <div class="drawer lg:drawer-open h-full">
     <input id="my-drawer" type="checkbox" class="drawer-toggle" />
-    <div class="drawer-content flex flex-col h-full">
+    <div v-if="chatStore.chatConversations.length!=0" class="drawer-content flex flex-col min-h-full">
       <!-- 顶层工具栏 -->
       <div class="flex h-20 w-full justify-between sticky top-0 border-b border-base-200 drop-shadow-md">
         <label for="my-drawer" class="lg:hidden ml-4 h-full text-2xl flex justify-center items-center">
           =
         </label>
-        <div class="lg: ml-4 h-full text-3xl flex justify-center items-center">{{
-          chatStore.chatConversations[chatStore.currentConversation].conversationName }}</div>
-        <button class="lg:ml-4 mr-4 h-full text-xl flex justify-center items-center">+</button>
+        <div class="lg: ml-4 h-full text-3xl flex justify-center items-center">
+          {{ chatStore.currentConversation.conversationName }}
+        </div>
+        <button class="lg:ml-4 mr-4 h-full text-xl flex justify-center items-center" @click="openModal">
+          +
+        </button>
       </div>
       <!-- 聊天区域 -->
-      <div class="flex flex-1 flex-col w-full">
+      <div class="flex h-3/5 flex-col w-full overflow-y-auto">
         <!-- 消息列表 -->
         <div class="flex-1 p-4">
           <div v-for="m in chatStore.currentMessages" :key="m">
-            <div v-if="m.sender != 'me'" class="chat chat-start">
+            <div v-if="m.sender != userStore.nickname" class="chat chat-start">
               <div class="chat-image avatar">
                 <div class="w-10 rounded-full">
                   {{ m.sender }}
@@ -36,13 +39,15 @@
         </div>
       </div>
       <!-- 输入区域 -->
-      <div class="w-full flex justify-center items-center sticky bottom-10">
+      <div class="w-full flex justify-center items-center bottom-10">
         <DraggableBox>
-          <textarea class="textarea-lg bg-base-300 w-3/4 h-3/4 focus:outline-none resize-none"
-            placeholder="输入消息"></textarea>
+          <textarea class="textarea-lg bg-base-300 w-3/4 h-3/4 focus:outline-none resize-none" placeholder="输入消息"
+            v-model="messageInput"></textarea>
+          <button class="btn btn-ghost" @click="sendMessage">Send</button>
         </DraggableBox>
       </div>
     </div>
+    <div v-else class="drawer-content flex flex-col h-full"></div>
     <!-- 侧边栏 -->
     <div class="drawer-side">
       <label for="my-drawer" aria-label="close sidebar" class="drawer-overlay"></label>
@@ -59,7 +64,7 @@
             <li v-if="chatStore.chatConversations.length > 0" class="menu-title">会话列表</li>
             <li v-for="(c, i) in chatStore.chatConversations" :key="c.conversationName" class="text-xl cursor-pointer"
               @click="chatStore.setCurrentConversation(i)">
-              <a :class="{ 'focus': chatStore.currentConversation === i }">{{ c.conversationName }}</a>
+              <a :class="{ 'focus': chatStore.currentConversationIndex === i }">{{ c.conversationName }}</a>
             </li>
           </ul>
         </div>
@@ -86,6 +91,32 @@
       </div>
     </div>
   </div>
+  <dialog id="my_modal_1" class="modal" ref="modal">
+    <div class="modal-box w-5/6 h-2/5 flex flex-col items-center justify-center gap-4">
+      <div class="flex justify-center items-center gap-4">
+        <input type="text" v-model="searchNickname" placeholder="输入昵称"
+          class="input w-full max-w-xs focus:border-none focus:ring-0" />
+        <button class="btn btn-ghost" @click="search">
+          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 16 16" fill="currentColor" class="h-4 w-4 opacity-70">
+            <path fill-rule="evenodd"
+              d="M9.965 11.026a5 5 0 1 1 1.06-1.06l2.755 2.754a.75.75 0 1 1-1.06 1.06l-2.755-2.754ZM10.5 7a3.5 3.5 0 1 1-7 0 3.5 3.5 0 0 1 7 0Z"
+              clip-rule="evenodd" />
+          </svg>
+        </button>
+      </div>
+      <div class="flex-1 self-center overflow-y-auto w-4/6 rounded-md">
+        <ul class="menu bg-base-100 p-0 [&_li>*]:rounded-md" v-for="r in searchResults" :key="r">
+          <li><a @click="switchConversation(r.nickname, r.publicKey, 'private')">{{ r.nickname }}</a></li>
+        </ul>
+      </div>
+      <div class="self-center">
+        <form method="dialog">
+          <!-- if there is a button, it will close the modal -->
+          <button class="btn btn-ghost" @click="searchResults.length = 0">Close</button>
+        </form>
+      </div>
+    </div>
+  </dialog>
 </template>
 
 <script setup>
@@ -94,7 +125,12 @@ import { useSocketStore } from '@/stores/socketStore'
 import { useUserStore } from '@/stores/userStore'
 import { useChatStore } from '@/stores/chatStore'
 import DraggableBox from '@/components/DraggableBox.vue'
+import { searchUser } from '@/api/userApi';
 
+import { useToast } from 'vue-toast-notification';
+import 'vue-toast-notification/dist/theme-sugar.css';
+
+const $toast = useToast();
 const socketStore = useSocketStore()
 const userStore = useUserStore()
 const chatStore = useChatStore()
@@ -103,14 +139,18 @@ const messageInput = ref('')
 const currentChat = ref(null)
 const chatList = ref([])
 const messages = ref([])
+const searchNickname = ref('');
+const searchResults = ref([]);
+const modal = ref(null);
 
-// onMounted(() => {
-//   // 初始化 socket 连接
-//   socketStore.initSocket(
-//     userStore.username,
-//     userStore.signature
-//   )
-// })
+onMounted(async () => {
+  // 初始化 socket 连接
+  const sign = await userStore.signature;
+  socketStore.initSocket(
+    userStore.nickname,
+    sign
+  )
+})
 
 const isDark = ref(false);
 const toggleTheme = () => {
@@ -119,17 +159,47 @@ const toggleTheme = () => {
   htmlElement.setAttribute('data-theme', isDark.value ? 'dark' : 'light');
 };
 
-// const sendMessage = () => {
-//   if (!messageInput.value.trim()) return
+const search = async () => {
+  try {
+    const res = await searchUser(searchNickname.value);
+    $toast.success(`用户存在：${res.results[0].nickname}`);
+    console.log(res.results[0].nickname);
+    searchResults.value = res.results;
+  } catch (error) {
+    $toast.error(`用户不存在`);
+    console.log(error)
+  }
+}
 
-//   socketStore.sendMessage(
-//     currentChat.value.type, // 'private' 或 'group'
-//     currentChat.value.recipient,
-//     messageInput.value
-//   )
+// 打开模态框
+const openModal = () => {
+  if (modal.value) modal.value.showModal();
+};
 
-//   messageInput.value = ''
-// }
+// 关闭模态框
+const closeModal = () => {
+  if (modal.value) modal.value.close();
+};
+
+const switchConversation = (nickname, publicKey, type) => {
+  const index = chatStore.addConversation(nickname, publicKey, type);
+  closeModal();
+  chatStore.setCurrentConversation(index);
+}
+
+const sendMessage = () => {
+  if (!messageInput.value.trim()) return
+
+  socketStore.sendMessage(
+    chatStore.currentConversation.type, // 'private' 或 'group'
+    chatStore.currentConversation.conversationName,
+    messageInput.value
+  )
+
+  chatStore.addMessage(userStore.nickname, messageInput.value);
+
+  messageInput.value = ''
+}
 </script>
 
 <style scoped>

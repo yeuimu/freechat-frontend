@@ -29,7 +29,8 @@ router.beforeEach(async (to, from, next) => {
   }
 
   try {
-    await verifyUser(nickname, signature)
+    const res = await verifyUser(nickname, signature)
+    console.log(res)
     if (to.path !== '/chat') {
       return next('/chat')
     }

@@ -15,7 +15,7 @@ import { ref } from 'vue';
 import { deleteUser } from '@/api/userApi';
 import { useRouter } from 'vue-router'
 
-import {useToast} from 'vue-toast-notification';
+import { useToast } from 'vue-toast-notification';
 import 'vue-toast-notification/dist/theme-sugar.css';
 
 const $toast = useToast();
@@ -58,7 +58,7 @@ const register = async () => {
     router.push('/chat');
   } catch (error) {
     console.error('注册失败:', error.response?.data || error.message);
-    $toast.error(`注册失败: ${error.response?.data || error.message}`, {duration: 30000});
+    $toast.error(`注册失败: ${error.response?.data || error.message}`, { duration: 30000 });
     userStore.clearUserData();
   }
 };

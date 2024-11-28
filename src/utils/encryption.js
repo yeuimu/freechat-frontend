@@ -43,7 +43,7 @@ export async function generatePemKeyPair() {
  * @returns {Promise<string>} Base64 编码的签名
  */
 export async function generateSignature(message, pemPrivateKey) {
-  console.log(`pemPrivateKey: ${pemPrivateKey}`);
+  // console.log(`pemPrivateKey: ${pemPrivateKey}`);
   // 提取 PEM 格式中的密钥
   const keyData = pemPrivateKey
     .replace(/-----BEGIN PRIVATE KEY-----|-----END PRIVATE KEY-----|\n/g, '');

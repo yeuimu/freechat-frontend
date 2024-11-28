@@ -1,14 +1,17 @@
 import { defineStore } from 'pinia'
 import { io } from 'socket.io-client'
 import { ref } from 'vue'
+import { useChatStore } from './chatStore'
 
 export const useSocketStore = defineStore('socket', () => {
   const socket = ref(null)
   const connected = ref(false)
   const messages = ref([])
 
+  const chatStore = useChatStore()
+
   const initSocket = (username, signature) => {
-    socket.value = io('ws://43.153.155.176/ws', {
+    socket.value = io('wss://xymyfh.fun/', {
       query: {
         username,
         signature,
@@ -22,6 +25,12 @@ export const useSocketStore = defineStore('socket', () => {
 
     socket.value.on('message', (data) => {
       messages.value.push(data)
+      console.log(data)
+      chatStore.currentConversation.messages.push({
+        sender: data.sender,
+        content: data.content,
+        id: data.id,
+      })
     })
 
     socket.value.on('error', (error) => {
@@ -48,4 +57,6 @@ export const useSocketStore = defineStore('socket', () => {
     if (!socket.value) return
     socket.value.emit('join', groupId)
   }
+
+  return {initSocket, sendMessage, joinGroup}
 })
