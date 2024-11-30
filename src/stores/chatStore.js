@@ -14,6 +14,7 @@ export const useChatStore = defineStore(
             content: '你好',
             id: null,
             data: null,
+            status: ''
           },
           {
             sender: 'nm',
@@ -128,21 +129,25 @@ export const useChatStore = defineStore(
     )
     const setCurrentConversation = (i) => (currentConversationIndex.value = i)
     const addConversation = (name, key, type) => {
-      let index = chatConversations.value.findIndex((c) => c.conversationName === name)
-      if (index !== -1) return index - 1
+      const index = chatConversations.value.findIndex((c) => c.conversationName === name)
+      console.log(index)
+      if (index !== -1) return index
 
-      index = chatConversations.value.push({
+      const len = chatConversations.value.push({
         conversationName: name,
         type,
         messages: [],
       })
       userList.value.push({ userName: name, publicKey: key }) - 1
-      return index
+      return len - 1
     }
-    const addMessage = (sender, content) => {
+    const addMessage = (sender, content, create) => {
       currentConversation.value.messages.push({
         sender,
         content,
+        create,
+        id: '',
+        status: 'Delivering',
       })
     }
 

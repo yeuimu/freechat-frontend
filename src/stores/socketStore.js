@@ -6,7 +6,7 @@ import { useChatStore } from './chatStore'
 export const useSocketStore = defineStore('socket', () => {
   const socket = ref(null)
   const connected = ref(false)
-  const messages = ref([])
+  const whoSendNewMessage = ref('');
 
   const chatStore = useChatStore()
 
@@ -23,14 +23,35 @@ export const useSocketStore = defineStore('socket', () => {
       console.log('Connected to server')
     })
 
-    socket.value.on('message', (data) => {
-      messages.value.push(data)
-      console.log(data)
-      chatStore.currentConversation.messages.push({
-        sender: data.sender,
-        content: data.content,
-        id: data.id,
-      })
+    socket.value.on('message', ({ type, sender, id, create, content }) => {
+      console.log({ type, sender, id, create, content });
+      const newMessage = {
+        sender,
+        content,
+        id,
+        create,
+      };
+      if (
+        chatStore.currentConversation.conversationName == sender &&
+        chatStore.currentConversation.type == type
+      ) {
+        chatStore.currentConversation.messages.push(newMessage);
+      }
+      else if (chatStore.chatConversations.some((c) => c.conversationName == sender)) {
+        const c = chatStore.chatConversations.find((c) => c.conversationName == sender);
+        c.messages.push(newMessage);
+      }
+      else {
+        const index = chatStore.addConversation(sender, type);
+        chatStore.chatConversations[index].messages.push(newMessage);
+      }
+      whoSendNewMessage.value = sender;
+    })
+
+    socket.value.on('respond', ({ code, message, toMessage }) => {
+      console.log(code)
+      console.log(message)
+      console.log(new Date(toMessage.create).toLocaleString())
     })
 
     socket.value.on('error', (error) => {
@@ -43,13 +64,14 @@ export const useSocketStore = defineStore('socket', () => {
     })
   }
 
-  const sendMessage = (chatType, recipient, content) => {
+  const sendMessage = (type, recipient, content, create) => {
     if (!socket.value) return
 
     socket.value.emit('message', {
-      chatType,
+      type,
       recipient,
       content,
+      create,
     })
   }
 
@@ -58,5 +80,5 @@ export const useSocketStore = defineStore('socket', () => {
     socket.value.emit('join', groupId)
   }
 
-  return {initSocket, sendMessage, joinGroup}
+  return { initSocket, sendMessage, joinGroup, whoSendNewMessage, connected }
 })

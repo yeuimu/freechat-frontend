@@ -32,6 +32,9 @@
                 {{ m.sender }}
               </div>
             </div>
+            <div class="chat-header">
+              <time v-if="m.create" class="text-xs opacity-50">{{ m.create }}</time>
+            </div>
             <div class="chat-bubble">{{ m.content }}</div>
           </div>
           <div v-else class="chat chat-end">
@@ -40,6 +43,9 @@
                 {{ m.sender }}
               </div>
             </div>
+            <div class="chat-header">
+              <time class="text-xs opacity-50">{{ m.create.toLocaleString() }}</time>
+            </div>
             <div class="chat-bubble">{{ m.content }}</div>
           </div>
         </div>
@@ -47,11 +53,12 @@
       <!-- 输入区域 -->
       <div class="flex items-center">
         <div class="flex-1">
-          <textarea class="w-full h-32 textarea-lg bg-base-100 rounded-xl focus:outline-none resize-none" placeholder="输入消息"
-            v-model="messageInput"></textarea>
+          <textarea class="w-full h-32 textarea-lg bg-base-100 rounded-xl focus:outline-none resize-none"
+            placeholder="输入消息" v-model="messageInput"></textarea>
         </div>
+        <!-- 发送按钮 -->
         <div class="flex-none">
-          <button class="btn btn-ghost" @click="sendMessage">Send</button>
+          <button class="btn btn-ghost" @click="send">Send</button>
         </div>
       </div>
     </div>
@@ -99,11 +106,14 @@
     </div>
   </div>
   <!-- 用户搜索框 -->
-  <dialog id="my_modal_1" class="modal" ref="modal">
-    <div class="modal-box w-5/6 h-2/5 flex flex-col items-center justify-center gap-4">
+  <dialog class="modal" ref="modal">
+    <div class="modal-box w-5/6 flex flex-col items-center justify-center gap-6">
+      <div class="text-2xl">发起聊天</div>
+      <!-- 输入框 -->
       <div class="flex justify-center items-center gap-4">
         <input type="text" v-model="searchNickname" placeholder="输入昵称"
           class="input w-full max-w-xs focus:border-none focus:ring-0" />
+        <!-- 搜索按钮 -->
         <button class="btn btn-ghost" @click="searchUserByName">
           <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 16 16" fill="currentColor" class="h-4 w-4 opacity-70">
             <path fill-rule="evenodd"
@@ -112,11 +122,14 @@
           </svg>
         </button>
       </div>
-      <div class="flex-1 self-center overflow-y-auto w-4/6 rounded-md">
+      <!-- 结果 -->
+      <div class="flex-1 overflow-y-auto w-4/6 rounded-md">
+        <span class="loading-spinner loading-xs" :class="{ loading: isSearching }"></span>
         <ul class="menu bg-base-100 p-0 [&_li>*]:rounded-md" v-for="r in searchResults" :key="r">
           <li><a @click="newConversation(r.nickname, r.publicKey, 'private')">{{ r.nickname }}</a></li>
         </ul>
       </div>
+      <!-- 关闭按钮 -->
       <div class="self-center">
         <form method="dialog">
           <!-- if there is a button, it will close the modal -->
@@ -124,11 +137,15 @@
         </form>
       </div>
     </div>
+    <!-- 屏罩 -->
+    <form method="dialog" class="modal-backdrop">
+      <button>close</button>
+    </form>
   </dialog>
 </template>
 
 <script setup>
-import { ref, onMounted } from 'vue'
+import { ref, onMounted, watch } from 'vue'
 import { searchUser } from '@/api/userApi';
 
 import { useToast } from 'vue-toast-notification';
@@ -181,9 +198,12 @@ const closeModal = () => {
   if (modal.value) modal.value.close();
 };
 
+const isSearching = ref(false);
 const searchNickname = ref('');
 const searchResults = ref([]);
 const searchUserByName = async () => {
+  isSearching.value = true;
+  searchResults.value = [];
   try {
     const res = await searchUser(searchNickname.value);
     $toast.success(`用户存在：${res.results[0].nickname}`);
@@ -193,22 +213,26 @@ const searchUserByName = async () => {
     $toast.error(`用户不存在`);
     console.log(error)
   }
+  isSearching.value = false;
 }
 const newConversation = (nickname, publicKey, type) => {
   const index = chatStore.addConversation(nickname, publicKey, type);
   closeModal();
-  chatStore.setCurrentConversation(index);
+  switchConversation(index);
+  console.log('add: ', index)
 }
 
 // 发送消息
-const sendMessage = () => {
-  if (!messageInput.value.trim()) return
+const send = () => {
+  if (!messageInput.value.trim()) return;
+  const create = new Date();
   socketStore.sendMessage(
     chatStore.currentConversation.type, // 'private' 或 'group'
     chatStore.currentConversation.conversationName,
-    messageInput.value
+    messageInput.value,
+    create,
   )
-  chatStore.addMessage(userStore.nickname, messageInput.value);
+  chatStore.addMessage(userStore.nickname, messageInput.value, create);
   messageInput.value = ''
 }
 
@@ -221,4 +245,9 @@ const switchConversation = (index) => {
   chatStore.setCurrentConversation(index)
   closeDrawer()
 }
+
+// 接受新消息
+watch(socketStore.whoSendNewMessage, (n) => {
+  $toast.info(`${n} 来了一条新消息`, {duration: 10000});
+})
 </script>
