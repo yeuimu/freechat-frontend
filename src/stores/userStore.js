@@ -12,7 +12,6 @@ export const useUserStore = defineStore(
 
     const generateKeys = async () => {
       const { pub, pri } = await generatePemKeyPair()
-      // console.log(`public key: ${pub}\nprivate key: ${pri}`)
       publicKey.value = pub
       privateKey.value = pri
     }

@@ -1,81 +1,88 @@
 <template>
-  <div class="drawer lg:drawer-open h-full">
-    <input id="my-drawer" type="checkbox" class="drawer-toggle" />
-    <div v-if="chatStore.chatConversations.length!=0" class="drawer-content flex flex-col min-h-full">
-      <!-- 顶层工具栏 -->
-      <div class="flex h-20 w-full justify-between sticky top-0 border-b border-base-200 drop-shadow-md">
-        <label for="my-drawer" class="lg:hidden ml-4 h-full text-2xl flex justify-center items-center">
-          =
-        </label>
-        <div class="lg: ml-4 h-full text-3xl flex justify-center items-center">
-          {{ chatStore.currentConversation.conversationName }}
+  <div class="drawer lg:drawer-open h-screen w-screen">
+    <input id="my-drawer" type="checkbox" v-model="drawer" class="drawer-toggle" />
+    <!-- 主栏 -->
+    <div class="drawer-content flex flex-col h-screen">
+      <!-- 顶栏 -->
+      <div class="navbar bg-base-100">
+        <!-- 打开侧边栏 -->
+        <div class="flex-none">
+          <label for="my-drawer" class="lg:hidden btn btn-square btn-ghost">
+            <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24"
+              class="inline-block h-5 w-5 stroke-current">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16M4 18h16"></path>
+            </svg>
+          </label>
         </div>
-        <button class="lg:ml-4 mr-4 h-full text-xl flex justify-center items-center" @click="openModal">
-          +
-        </button>
+        <!-- 对话名 -->
+        <div class="flex-1">
+          <a class="btn btn-ghost text-xl">{{ chatStore.currentConversation.conversationName }}</a>
+        </div>
+        <div class="flex-none">
+          <button class="lg:ml-4 text-xl btn btn-square btn-ghost" @click="openModal">+</button>
+        </div>
       </div>
       <!-- 聊天区域 -->
-      <div class="flex h-3/5 flex-col w-full overflow-y-auto">
+      <div class="flex-grow overflow-y-auto flex-col">
         <!-- 消息列表 -->
-        <div class="flex-1 p-4">
-          <div v-for="m in chatStore.currentMessages" :key="m">
-            <div v-if="m.sender != userStore.nickname" class="chat chat-start">
-              <div class="chat-image avatar">
-                <div class="w-10 rounded-full">
-                  {{ m.sender }}
-                </div>
+        <div class="my-2 mx-2" v-for="m in chatStore.currentMessages" :key="m">
+          <div v-if="m.sender != userStore.nickname" class="chat chat-start">
+            <div class="chat-image avatar">
+              <div class="w-10 rounded-full">
+                {{ m.sender }}
               </div>
-              <div class="chat-bubble">{{ m.content }}</div>
             </div>
-            <div v-else class="chat chat-end">
-              <div class="chat-image avatar">
-                <div class="w-10 rounded-full">
-                  {{ m.sender }}
-                </div>
+            <div class="chat-bubble">{{ m.content }}</div>
+          </div>
+          <div v-else class="chat chat-end">
+            <div class="chat-image avatar">
+              <div class="w-10 rounded-full">
+                {{ m.sender }}
               </div>
-              <div class="chat-bubble">{{ m.content }}</div>
             </div>
+            <div class="chat-bubble">{{ m.content }}</div>
           </div>
         </div>
       </div>
       <!-- 输入区域 -->
-      <div class="w-full flex justify-center items-center bottom-10">
-        <DraggableBox>
-          <textarea class="textarea-lg bg-base-300 w-3/4 h-3/4 focus:outline-none resize-none" placeholder="输入消息"
+      <div class="flex items-center">
+        <div class="flex-1">
+          <textarea class="w-full h-32 textarea-lg bg-base-100 rounded-xl focus:outline-none resize-none" placeholder="输入消息"
             v-model="messageInput"></textarea>
+        </div>
+        <div class="flex-none">
           <button class="btn btn-ghost" @click="sendMessage">Send</button>
-        </DraggableBox>
+        </div>
       </div>
     </div>
-    <div v-else class="drawer-content flex flex-col h-full"></div>
     <!-- 侧边栏 -->
     <div class="drawer-side">
       <label for="my-drawer" aria-label="close sidebar" class="drawer-overlay"></label>
-      <div class="w-2/3 lg:min-w-40 bg-base-100 h-full flex flex-col gap-2">
+      <div class="w-2/3 lg:min-w-40 bg-base-100 h-screen flex flex-col">
         <!-- 头像 -->
-        <div class="self-center avatar placeholder mt-6">
+        <div class="flex-0 self-center avatar mt-4">
           <div class="bg-neutral text-neutral-content w-12 rounded-full">
             <span class="text-2xl">{{ userStore.nickname }}</span>
           </div>
         </div>
         <!-- 聊天列表 -->
-        <div class="overflow-y-auto h-4/6">
+        <div class="overflow-y-auto flex-grow">
           <ul class="menu rounded-box">
-            <li v-if="chatStore.chatConversations.length > 0" class="menu-title">会话列表</li>
+            <li class="menu-title">会话列表</li>
             <li v-for="(c, i) in chatStore.chatConversations" :key="c.conversationName" class="text-xl cursor-pointer"
-              @click="chatStore.setCurrentConversation(i)">
+              @click="switchConversation(i)">
               <a :class="{ 'focus': chatStore.currentConversationIndex === i }">{{ c.conversationName }}</a>
             </li>
           </ul>
         </div>
         <!-- 注销 -->
-        <div class="flex flex-0 lg:flex-col justify-around">
+        <div class="flex flex-none lg:flex-col justify-around mb-2">
           <button class="self-center btn btn-ghost btn-square">退出</button>
           <button class="self-center btn btn-ghost btn-square">注销</button>
           <!-- 主题切换 -->
-          <label class="swap swap-rotate mt-1">
+          <label class="swap mt-2">
             <!-- this hidden checkbox controls the state -->
-            <input type="checkbox" class="theme-controller" @click="toggleTheme" />
+            <input type="checkbox" class="theme-controller" v-model="isDark" @click="toggleTheme" />
             <!-- sun icon -->
             <svg class="swap-off h-6 w-6 fill-current" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24">
               <path
@@ -91,12 +98,13 @@
       </div>
     </div>
   </div>
+  <!-- 用户搜索框 -->
   <dialog id="my_modal_1" class="modal" ref="modal">
     <div class="modal-box w-5/6 h-2/5 flex flex-col items-center justify-center gap-4">
       <div class="flex justify-center items-center gap-4">
         <input type="text" v-model="searchNickname" placeholder="输入昵称"
           class="input w-full max-w-xs focus:border-none focus:ring-0" />
-        <button class="btn btn-ghost" @click="search">
+        <button class="btn btn-ghost" @click="searchUserByName">
           <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 16 16" fill="currentColor" class="h-4 w-4 opacity-70">
             <path fill-rule="evenodd"
               d="M9.965 11.026a5 5 0 1 1 1.06-1.06l2.755 2.754a.75.75 0 1 1-1.06 1.06l-2.755-2.754ZM10.5 7a3.5 3.5 0 1 1-7 0 3.5 3.5 0 0 1 7 0Z"
@@ -106,7 +114,7 @@
       </div>
       <div class="flex-1 self-center overflow-y-auto w-4/6 rounded-md">
         <ul class="menu bg-base-100 p-0 [&_li>*]:rounded-md" v-for="r in searchResults" :key="r">
-          <li><a @click="switchConversation(r.nickname, r.publicKey, 'private')">{{ r.nickname }}</a></li>
+          <li><a @click="newConversation(r.nickname, r.publicKey, 'private')">{{ r.nickname }}</a></li>
         </ul>
       </div>
       <div class="self-center">
@@ -121,16 +129,15 @@
 
 <script setup>
 import { ref, onMounted } from 'vue'
-import { useSocketStore } from '@/stores/socketStore'
-import { useUserStore } from '@/stores/userStore'
-import { useChatStore } from '@/stores/chatStore'
-import DraggableBox from '@/components/DraggableBox.vue'
 import { searchUser } from '@/api/userApi';
 
 import { useToast } from 'vue-toast-notification';
 import 'vue-toast-notification/dist/theme-sugar.css';
-
 const $toast = useToast();
+
+import { useSocketStore } from '@/stores/socketStore'
+import { useUserStore } from '@/stores/userStore'
+import { useChatStore } from '@/stores/chatStore'
 const socketStore = useSocketStore()
 const userStore = useUserStore()
 const chatStore = useChatStore()
@@ -139,9 +146,6 @@ const messageInput = ref('')
 const currentChat = ref(null)
 const chatList = ref([])
 const messages = ref([])
-const searchNickname = ref('');
-const searchResults = ref([]);
-const modal = ref(null);
 
 onMounted(async () => {
   // 初始化 socket 连接
@@ -150,16 +154,36 @@ onMounted(async () => {
     userStore.nickname,
     sign
   )
+  // 检测系统是否切换是黑暗模式
+  isSystemDark()
 })
 
-const isDark = ref(false);
+// 主题切换
+const isDark = ref(null);
+const isSystemDark = () => {
+  if (window.matchMedia('(prefers-color-scheme: dark)').matches) {
+    document.documentElement.setAttribute('data-theme', 'dark')
+    isDark.value = true
+  }
+}
 const toggleTheme = () => {
   const htmlElement = document.documentElement;
-  isDark.value = !isDark.value;
-  htmlElement.setAttribute('data-theme', isDark.value ? 'dark' : 'light');
+  console.log(htmlElement.dataset.theme)
+  htmlElement.setAttribute('data-theme', isDark.value ? 'light' : 'dark');
 };
 
-const search = async () => {
+// 搜索用户
+const modal = ref(null);
+const openModal = () => {
+  if (modal.value) modal.value.showModal();
+};
+const closeModal = () => {
+  if (modal.value) modal.value.close();
+};
+
+const searchNickname = ref('');
+const searchResults = ref([]);
+const searchUserByName = async () => {
   try {
     const res = await searchUser(searchNickname.value);
     $toast.success(`用户存在：${res.results[0].nickname}`);
@@ -170,38 +194,31 @@ const search = async () => {
     console.log(error)
   }
 }
-
-// 打开模态框
-const openModal = () => {
-  if (modal.value) modal.value.showModal();
-};
-
-// 关闭模态框
-const closeModal = () => {
-  if (modal.value) modal.value.close();
-};
-
-const switchConversation = (nickname, publicKey, type) => {
+const newConversation = (nickname, publicKey, type) => {
   const index = chatStore.addConversation(nickname, publicKey, type);
   closeModal();
   chatStore.setCurrentConversation(index);
 }
 
+// 发送消息
 const sendMessage = () => {
   if (!messageInput.value.trim()) return
-
   socketStore.sendMessage(
     chatStore.currentConversation.type, // 'private' 或 'group'
     chatStore.currentConversation.conversationName,
     messageInput.value
   )
-
   chatStore.addMessage(userStore.nickname, messageInput.value);
-
   messageInput.value = ''
 }
-</script>
 
-<style scoped>
-/* 可以添加自定义样式 */
-</style>
+// 会话列表
+const drawer = ref(null)
+const closeDrawer = () => {
+  if (drawer.value == true) drawer.value = false;
+}
+const switchConversation = (index) => {
+  chatStore.setCurrentConversation(index)
+  closeDrawer()
+}
+</script>
