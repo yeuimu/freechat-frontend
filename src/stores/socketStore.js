@@ -2,6 +2,9 @@ import { defineStore } from 'pinia'
 import { io } from 'socket.io-client'
 import { ref } from 'vue'
 import { useChatStore } from './chatStore'
+import { useToast } from 'vue-toast-notification';
+import 'vue-toast-notification/dist/theme-sugar.css';
+const $toast = useToast();
 
 export const useSocketStore = defineStore('socket', () => {
   const socket = ref(null)
@@ -36,22 +39,23 @@ export const useSocketStore = defineStore('socket', () => {
         chatStore.currentConversation.type == type
       ) {
         chatStore.currentConversation.messages.push(newMessage);
+      } else {
+        if (chatStore.chatConversations.some((c) => c.conversationName == sender)) {
+          const c = chatStore.chatConversations.find((c) => c.conversationName == sender);
+          c.messages.push(newMessage);
+        }
+        else {
+          const index = chatStore.addConversation(sender, '', type);
+          chatStore.chatConversations[index].messages.push(newMessage);
+        }
+        $toast.info(`${sender} 来了一条新消息`, {duration: 10000});
       }
-      else if (chatStore.chatConversations.some((c) => c.conversationName == sender)) {
-        const c = chatStore.chatConversations.find((c) => c.conversationName == sender);
-        c.messages.push(newMessage);
-      }
-      else {
-        const index = chatStore.addConversation(sender, type);
-        chatStore.chatConversations[index].messages.push(newMessage);
-      }
-      whoSendNewMessage.value = sender;
     })
 
     socket.value.on('respond', ({ code, message, toMessage }) => {
       console.log(code)
       console.log(message)
-      console.log(new Date(toMessage.create).toLocaleString())
+      console.log(new Date(toMessage.create).toLocaleString('zh-cn'))
     })
 
     socket.value.on('error', (error) => {
@@ -65,7 +69,8 @@ export const useSocketStore = defineStore('socket', () => {
   }
 
   const sendMessage = (type, recipient, content, create) => {
-    if (!socket.value) return
+    if (!socket.value) return;
+    console.log(type);
 
     socket.value.emit('message', {
       type,

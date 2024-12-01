@@ -232,7 +232,7 @@ const send = () => {
     messageInput.value,
     create,
   )
-  chatStore.addMessage(userStore.nickname, messageInput.value, create);
+  chatStore.addMessage(userStore.nickname, messageInput.value, create.toLocaleString('zh-cn'));
   messageInput.value = ''
 }
 
@@ -245,9 +245,4 @@ const switchConversation = (index) => {
   chatStore.setCurrentConversation(index)
   closeDrawer()
 }
-
-// 接受新消息
-watch(socketStore.whoSendNewMessage, (n) => {
-  $toast.info(`${n} 来了一条新消息`, {duration: 10000});
-})
 </script>
