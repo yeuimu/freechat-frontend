@@ -53,7 +53,6 @@ export const deleteUser = (nickname, signature) => {
  * @param {string} signature - 用户签名
  * @returns {Promise} Axios 请求 Promise
  */
-export const verifyUser = (nickname, signature) => {
-  console.log(`signature: ${signature}`)
-  return apiClient.post(`/user/verify`, { nickname, signature })
+export const refreshUser = (nickname, signature) => {
+  return apiClient.post(`/user/refresh`, { nickname, signature })
 }

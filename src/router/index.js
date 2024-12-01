@@ -3,7 +3,7 @@ import Home from '../views/FreechatHome.vue'
 import Login from '../views/FreechatLogin.vue'
 import Chat from '../views/FreechatChat.vue'
 import { useUserStore } from '@/stores/userStore'
-import { verifyUser } from '@/api/userApi'
+import { refreshUser } from '@/api/userApi'
 
 const routes = [
   { path: '/', name: 'Home', component: Home },
@@ -29,7 +29,7 @@ router.beforeEach(async (to, from, next) => {
   }
 
   try {
-    const res = await verifyUser(nickname, signature)
+    const res = await refreshUser(nickname, signature)
     console.log(res)
     if (to.path !== '/chat') {
       return next('/chat')
