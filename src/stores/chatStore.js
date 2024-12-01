@@ -14,7 +14,7 @@ export const useChatStore = defineStore(
             content: '你好',
             id: null,
             data: null,
-            status: ''
+            status: '',
           },
           {
             sender: 'nm',
@@ -119,6 +119,12 @@ export const useChatStore = defineStore(
     // const chatConversations = ref(null)
     // const userList = ref(null)
     // const currentConversationIndex = ref(null)
+    const addUser = (nickname, publickey) => {
+      userList.value.push({
+        userName: nickname,
+        publicKey: publickey,
+      })
+    }
     const currentConversation = computed(() =>
       currentConversationIndex.value == null
         ? ''
@@ -129,8 +135,8 @@ export const useChatStore = defineStore(
     )
     const setCurrentConversation = (i) => (currentConversationIndex.value = i)
     const addConversation = (name, key, type) => {
-      const index = chatConversations.value.findIndex((c) => c.conversationName === name);
-      if (index !== -1) return index;
+      const index = chatConversations.value.findIndex((c) => c.conversationName === name)
+      if (index !== -1) return index
 
       const len = chatConversations.value.push({
         conversationName: name,
@@ -159,6 +165,7 @@ export const useChatStore = defineStore(
       setCurrentConversation,
       addConversation,
       addMessage,
+      addUser,
     }
   },
   {

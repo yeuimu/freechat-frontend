@@ -2,7 +2,9 @@ import { defineStore } from 'pinia'
 import { io } from 'socket.io-client'
 import { ref } from 'vue'
 import { useChatStore } from './chatStore'
+import { useUserStore } from './userStore'
 import { useToast } from 'vue-toast-notification';
+import { publickeyUser } from '@/api/userApi';
 import 'vue-toast-notification/dist/theme-sugar.css';
 const $toast = useToast();
 
@@ -12,6 +14,7 @@ export const useSocketStore = defineStore('socket', () => {
   const whoSendNewMessage = ref('');
 
   const chatStore = useChatStore()
+  const userStore = useUserStore();
 
   const initSocket = (username, signature) => {
     socket.value = io('wss://xymyfh.fun/', {
@@ -26,7 +29,7 @@ export const useSocketStore = defineStore('socket', () => {
       console.log('Connected to server')
     })
 
-    socket.value.on('message', ({ type, sender, id, create, content }) => {
+    socket.value.on('message', async ({ type, sender, id, create, content }) => {
       console.log({ type, sender, id, create, content });
       const newMessage = {
         sender,
@@ -45,7 +48,14 @@ export const useSocketStore = defineStore('socket', () => {
           c.messages.push(newMessage);
         }
         else {
-          const index = chatStore.addConversation(sender, '', type);
+          const res = await publickeyUser(userStore.nickname, userStore.signature, sender);
+          let index = 0;
+          if (res.publicKey) {
+            chatStore.addUser(sender, res.publicKey);
+            index = chatStore.addConversation(sender, res.publicKey, type);
+          } else {
+            Error(`Not found public key of ${sender}`);
+          }
           chatStore.chatConversations[index].messages.push(newMessage);
         }
         $toast.info(`${sender} 来了一条新消息`, {duration: 10000});
