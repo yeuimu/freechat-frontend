@@ -33,8 +33,8 @@ export const updateUserActivity = (nickname) => {
  * @param {string} query - 搜索关键字
  * @returns {Promise} Axios 请求 Promise
  */
-export const searchUser = (query) => {
-  return apiClient.get('/user/search', { params: { query } })
+export const searchUser = (nickname, signature, query) => {
+  return apiClient.post('/user/search', { nickname, signature, query })
 }
 
 /**

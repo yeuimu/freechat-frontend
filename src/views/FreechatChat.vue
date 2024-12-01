@@ -205,7 +205,7 @@ const searchUserByName = async () => {
   isSearching.value = true;
   searchResults.value = [];
   try {
-    const res = await searchUser(searchNickname.value);
+    const res = await searchUser(userStore.nickname, await userStore.signature, searchNickname.value);
     $toast.success(`用户存在：${res.results[0].nickname}`);
     console.log(res.results[0].nickname);
     searchResults.value = res.results;
