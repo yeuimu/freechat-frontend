@@ -28,7 +28,7 @@
         <div class="my-2 mx-2" v-for="m in chatStore.currentMessages" :key="m">
           <div v-if="m.sender != userStore.nickname" class="chat chat-start">
             <div class="chat-image avatar">
-              <div class="w-10 rounded-full">
+              <div class="w-10 rounded-full bg-base-300 text-center">
                 {{ m.sender }}
               </div>
             </div>
@@ -39,12 +39,12 @@
           </div>
           <div v-else class="chat chat-end">
             <div class="chat-image avatar">
-              <div class="w-10 rounded-full">
+              <div class="w-10 rounded-full bg-base-300 text-center">
                 {{ m.sender }}
               </div>
             </div>
             <div class="chat-header">
-              <time class="text-xs opacity-50">{{ m.create.toLocaleString() }}</time>
+              <time class="text-xs opacity-50">{{ m.create }}</time>
             </div>
             <div class="max-w-xs lg:max-w-2xl break-words chat-bubble">{{ m.content }}</div>
           </div>
