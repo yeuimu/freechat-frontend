@@ -25,7 +25,7 @@ export const useSocketStore = defineStore('socket', () => {
   const initSocket = (username, signature) => {
     // 发起连接
     socket.value = io('wss://xymyfh.fun/', {
-      query: {
+      auth: {
         username,
         signature,
       },
