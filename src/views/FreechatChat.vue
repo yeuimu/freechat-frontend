@@ -16,7 +16,7 @@
         </div>
         <!-- 对话名 -->
         <div class="flex-1">
-          <a class="btn btn-ghost text-xl">{{ chatStore.currentConversation.conversationName }}</a>
+          <a class="btn btn-ghost text-xl">{{ chatStore.currentConversation.name }}</a>
         </div>
         <div class="flex-none">
           <button class="lg:ml-4 text-xl btn btn-square btn-ghost" @click="openModal">+</button>
@@ -76,9 +76,9 @@
         <div class="overflow-y-auto flex-grow">
           <ul class="menu rounded-box">
             <li class="menu-title">会话列表</li>
-            <li v-for="(c, i) in chatStore.chatConversations" :key="c.conversationName" class="text-xl cursor-pointer"
+            <li v-for="(c, i) in chatStore.chatConversations" :key="c.name" class="text-xl cursor-pointer"
               @click="switchConversation(i)">
-              <a :class="{ 'focus': chatStore.currentConversationIndex === i }">{{ c.conversationName }}</a>
+              <a :class="{ 'focus': chatStore.currentConversationIndex === i }">{{ c.name }}</a>
             </li>
           </ul>
         </div>
@@ -228,7 +228,7 @@ const send = () => {
   const create = new Date();
   socketStore.sendMessage(
     chatStore.currentConversation.type, // 'private' 或 'group'
-    chatStore.currentConversation.conversationName,
+    chatStore.currentConversation.name,
     messageInput.value,
     create,
   )

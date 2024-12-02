@@ -5,14 +5,8 @@ export const useChatStore = defineStore(
   'chat',
   () => {
     const chatConversations = ref(null)
-    const userList = ref(null)
     const currentConversationIndex = ref(null)
-    const addUser = (nickname, publickey) => {
-      userList.value.push({
-        userName: nickname,
-        publicKey: publickey,
-      })
-    }
+
     const currentConversation = computed(() =>
       currentConversationIndex.value == null
         ? ''
@@ -21,17 +15,18 @@ export const useChatStore = defineStore(
     const currentMessages = computed(() =>
       currentConversationIndex.value == null ? '' : currentConversation.value.messages,
     )
+
     const setCurrentConversation = (i) => (currentConversationIndex.value = i)
-    const addConversation = (name, key, type) => {
-      const index = chatConversations.value.findIndex((c) => c.conversationName === name)
+    const addConversation = (name, publickey, type) => {
+      const index = chatConversations.value.findIndex((c) => c.name === name)
       if (index !== -1) return index
 
       const len = chatConversations.value.push({
-        conversationName: name,
-        type: type,
+        name: name,
+        type,
         messages: [],
+        publickey,
       })
-      userList.value.push({ userName: name, publicKey: key }) - 1
       return len - 1
     }
     const addMessage = (sender, content, create) => {
@@ -46,14 +41,12 @@ export const useChatStore = defineStore(
 
     return {
       chatConversations,
-      userList,
       currentConversationIndex,
       currentConversation,
       currentMessages,
       setCurrentConversation,
       addConversation,
       addMessage,
-      addUser,
     }
   },
   {

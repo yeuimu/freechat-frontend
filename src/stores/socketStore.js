@@ -38,20 +38,19 @@ export const useSocketStore = defineStore('socket', () => {
         create,
       };
       if (
-        chatStore.currentConversation.conversationName == sender &&
+        chatStore.currentConversation.name == sender &&
         chatStore.currentConversation.type == type
       ) {
         chatStore.currentConversation.messages.push(newMessage);
       } else {
-        if (chatStore.chatConversations.some((c) => c.conversationName == sender)) {
-          const c = chatStore.chatConversations.find((c) => c.conversationName == sender);
+        if (chatStore.chatConversations.some((c) => c.name == sender)) {
+          const c = chatStore.chatConversations.find((c) => c.name == sender);
           c.messages.push(newMessage);
         }
         else {
           const res = await publickeyUser(userStore.nickname, userStore.signature, sender);
           let index = 0;
           if (res.publicKey) {
-            chatStore.addUser(sender, res.publicKey);
             index = chatStore.addConversation(sender, res.publicKey, type);
           } else {
             Error(`Not found public key of ${sender}`);
