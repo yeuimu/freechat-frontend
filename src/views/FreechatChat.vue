@@ -35,7 +35,7 @@
             <div class="chat-header">
               <time v-if="m.create" class="text-xs opacity-50">{{ m.create }}</time>
             </div>
-            <div class="chat-bubble">{{ m.content }}</div>
+            <div class="w-full break-words chat-bubble">{{ m.content }}</div>
           </div>
           <div v-else class="chat chat-end">
             <div class="chat-image avatar">
