@@ -4,7 +4,7 @@ import { computed, ref } from 'vue'
 export const useChatStore = defineStore(
   'chat',
   () => {
-    const chatConversations = ref(null)
+    const chatConversations = ref([])
     const currentConversationIndex = ref(null)
 
     const currentConversation = computed(() =>
@@ -18,8 +18,8 @@ export const useChatStore = defineStore(
 
     const setCurrentConversation = (i) => (currentConversationIndex.value = i)
     const addConversation = (name, publickey, type) => {
-      const index = chatConversations.value.findIndex((c) => c.name === name)
-      if (index !== -1) return index
+      const index = chatConversations.value?.findIndex((c) => c.name === name)
+      if (index && index !== -1) return index
 
       const len = chatConversations.value.push({
         name: name,

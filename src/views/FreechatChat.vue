@@ -159,11 +159,6 @@ const socketStore = useSocketStore()
 const userStore = useUserStore()
 const chatStore = useChatStore()
 
-const messageInput = ref('')
-const currentChat = ref(null)
-const chatList = ref([])
-const messages = ref([])
-
 onMounted(async () => {
   // 初始化 socket 连接
   const sign = await userStore.signature;
@@ -207,7 +202,7 @@ const searchUserByName = async () => {
   try {
     const res = await searchUser(userStore.nickname, await userStore.signature, searchNickname.value);
     $toast.success(`用户存在：${res.results[0].nickname}`);
-    console.log(res.results[0].nickname);
+    console.log(res.results[0]);
     searchResults.value = res.results;
   } catch (error) {
     $toast.error(`用户不存在`);
@@ -215,18 +210,20 @@ const searchUserByName = async () => {
   }
   isSearching.value = false;
 }
-const newConversation = (nickname, publicKey, type) => {
-  const index = chatStore.addConversation(nickname, publicKey, type);
+const newConversation = (nickname, publickey, type) => {
+  const index = chatStore.addConversation(nickname, publickey, type);
   closeModal();
   switchConversation(index);
   console.log('add: ', index)
 }
 
 // 发送消息
-const send = () => {
-  if (!messageInput.value.trim()) return;
+const messageInput = ref('');
+const send = async () => {
+  // if (!messageInput.value.trim()) return;
+  console.log(messageInput.value);
   const create = new Date();
-  socketStore.sendMessage(
+  await socketStore.sendMessage(
     chatStore.currentConversation.type, // 'private' 或 'group'
     chatStore.currentConversation.name,
     messageInput.value,
