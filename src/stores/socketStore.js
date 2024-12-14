@@ -102,7 +102,8 @@ export const useSocketStore = defineStore('socket', () => {
       chatStore.currentConversation.name == sender &&
       chatStore.currentConversation.type == type
     ) {
-      chatStore.currentConversation.messages.push(newMessage)
+      if (newMessage.sender !== userStore.nickname)
+        chatStore.currentConversation.messages.push(newMessage)
     } else {
       if (chatStore.chatConversations.some((c) => c.name == sender)) {
         const c = chatStore.chatConversations.find((c) => c.name == sender)
