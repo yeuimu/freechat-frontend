@@ -46,7 +46,12 @@
             <div class="chat-header">
               <time class="text-xs opacity-50">{{ m.create }}</time>
             </div>
-            <div class="max-w-xs lg:max-w-2xl break-words chat-bubble">{{ m.content }}</div>
+            <div data-tip="复制" class="tooltip tooltip-accent">
+              <button @click="copyToClipboard($event, m.content)" class="btn h-max cursor-copy font-mono font-light max-w-xs lg:max-w-2xl break-words chat-bubble">
+                {{ m.content }}
+              </button>
+              <!-- <div class="max-w-xs lg:max-w-2xl break-words chat-bubble">{{ m.content }}</div> -->
+            </div>
           </div>
         </div>
       </div>
@@ -241,5 +246,13 @@ const closeDrawer = () => {
 const switchConversation = (index) => {
   chatStore.setCurrentConversation(index)
   closeDrawer()
+}
+
+// 复制消息
+const copyToClipboard = async (event, text) => {
+  const parentElement = event.target.parentElement;
+  parentElement.setAttribute('data-tip', '已复制');
+  setTimeout(() => parentElement.setAttribute('data-tip', '复制'), 1000);
+  await navigator.clipboard.writeText(text);
 }
 </script>
