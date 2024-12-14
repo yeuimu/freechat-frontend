@@ -142,7 +142,7 @@
       </div>
     </div>
     <!-- 屏罩 -->
-    <label class="modal-backdrop" for="modal_search">Close</label>
+    <label class="modal-backdrop" for="modal_search" @click="searchResults.length = 0">Close</label>
   </div>
 </template>
 
