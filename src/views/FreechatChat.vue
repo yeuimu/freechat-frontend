@@ -23,7 +23,7 @@
         </div>
       </div>
       <!-- 聊天区域 -->
-      <div class="flex-grow overflow-y-auto flex-col">
+      <div class="flex-grow overflow-y-auto flex-col" ref="messageArea">
         <!-- 消息列表 -->
         <div class="my-2 mx-2" v-for="m in chatStore.currentMessages" :key="m">
           <div v-if="m.sender != userStore.nickname" class="chat chat-start">
@@ -55,6 +55,7 @@
             </div>
           </div>
         </div>
+        <div v-if="isNewMessage" @click="toTopMessageArea" class="sticky bottom-0 flex justify-center"><button class="btn btn-xs btn-ghost">新消息</button></div>
       </div>
       <!-- 输入区域 -->
       <div class="flex items-center">
@@ -64,7 +65,7 @@
         </div>
         <!-- 发送按钮 -->
         <div class="flex-none">
-          <button class="btn btn-ghost" @click="send">发送</button>
+          <button class="btn btn-ghost" @click="sendMessage">发送</button>
         </div>
       </div>
     </div>
@@ -268,7 +269,7 @@ const newConversation = (nickname, publickey, type) => {
 
 // 发送消息
 const messageInput = ref('');
-const send = async () => {
+const sendMessage = async () => {
   // if (!messageInput.value.trim()) return;
   console.log(messageInput.value);
   const create = new Date();
@@ -280,6 +281,7 @@ const send = async () => {
   )
   chatStore.addMessage(userStore.nickname, messageInput.value, create.toLocaleString('zh-cn'));
   messageInput.value = ''
+  toTopMessageArea();
 }
 
 // 会话列表
@@ -312,5 +314,30 @@ const closeModalDeleteConversation = () => {
 const deleteCurrentConversation = () => {
   chatStore.deleteCurrentConversation();
   closeModalDeleteConversation();
+}
+
+// 新消息提醒
+const isNewMessage = ref(false);
+watch(chatStore.currentMessages, () => {
+  console.log("有新消息来了！");
+  const clientHeight = messageArea.value.clientHeight;
+  const scrollTop = messageArea.value.scrollTop;
+  const scrollHeight = messageArea.value.scrollHeight;
+  // console.log(clientHeight);
+  // console.log(scrollTop);
+  // console.log(clientHeight + scrollTop);
+  // console.log(`总高度：${scrollHeight}`);
+  // console.log(scrollHeight - clientHeight - scrollTop);
+  if (scrollHeight - clientHeight - scrollTop > 72) {
+    isNewMessage.value = true;
+    setTimeout(() => isNewMessage.value = false, 5000);
+  }
+})
+
+// 将消息框内的滚动条滚到最底下
+const messageArea = ref();
+const toTopMessageArea = () => {
+  setTimeout(() => messageArea.value.scrollTop = messageArea.value.scrollHeight, 100);
+  isNewMessage.value = false;
 }
 </script>
