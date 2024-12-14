@@ -47,7 +47,8 @@
               <time class="text-xs opacity-50">{{ m.create }}</time>
             </div>
             <div data-tip="复制" class="tooltip tooltip-accent">
-              <button @click="copyToClipboard($event, m.content)" class="btn h-max cursor-copy font-mono font-light max-w-xs lg:max-w-2xl break-words chat-bubble">
+              <button @click="copyToClipboard($event, m.content)"
+                class="btn h-max cursor-copy font-mono font-light max-w-xs lg:max-w-2xl break-words chat-bubble">
                 {{ m.content }}
               </button>
               <!-- <div class="max-w-xs lg:max-w-2xl break-words chat-bubble">{{ m.content }}</div> -->
@@ -111,8 +112,9 @@
     </div>
   </div>
   <!-- 用户搜索框 -->
-  <dialog class="modal" ref="modal">
-    <div class="modal-box w-5/6 flex flex-col items-center justify-center gap-6">
+  <input type="checkbox" id="modal_search" ref="modalSearch" class="modal-toggle" />
+  <div class="modal" role="dialog" ref="modal">
+    <div class="modal-box -z-1 w-5/6 flex flex-col items-center justify-center gap-6">
       <div class="text-2xl">发起聊天</div>
       <!-- 输入框 -->
       <div class="flex justify-center items-center gap-4">
@@ -135,18 +137,13 @@
         </ul>
       </div>
       <!-- 关闭按钮 -->
-      <div class="self-center">
-        <form method="dialog">
-          <!-- if there is a button, it will close the modal -->
-          <button class="btn btn-ghost" @click="searchResults.length = 0">Close</button>
-        </form>
+      <div class="modal-action">
+        <label for="modal_search" class="btn btn-ghost" @click="searchResults.length = 0">关闭</label>
       </div>
     </div>
     <!-- 屏罩 -->
-    <form method="dialog" class="modal-backdrop">
-      <button>close</button>
-    </form>
-  </dialog>
+    <label class="modal-backdrop" for="modal_search">Close</label>
+  </div>
 </template>
 
 <script setup>
@@ -189,13 +186,13 @@ const toggleTheme = () => {
   htmlElement.setAttribute('data-theme', isDark.value ? 'light' : 'dark');
 };
 
-// 搜索用户
-const modal = ref(null);
+// 用户搜索框
+const modalSearch = ref();
 const openModal = () => {
-  if (modal.value) modal.value.showModal();
+  modalSearch.value.checked = true;
 };
 const closeModal = () => {
-  if (modal.value) modal.value.close();
+  modalSearch.value.checked = false;
 };
 
 const isSearching = ref(false);
