@@ -19,7 +19,7 @@
           <a class="btn btn-ghost text-xl">{{ chatStore.currentConversation.name }}</a>
         </div>
         <div class="flex-none">
-          <button class="lg:ml-4 text-xl btn btn-square btn-ghost" @click="openModal">+</button>
+          <button class="lg:ml-4 text-xl btn btn-square btn-ghost" @click="openModalSearch">+</button>
         </div>
       </div>
       <!-- 聊天区域 -->
@@ -71,7 +71,7 @@
     <!-- 侧边栏 -->
     <div class="drawer-side">
       <label for="my-drawer" aria-label="close sidebar" class="drawer-overlay"></label>
-      <div class="w-2/3 lg:min-w-48 bg-base-100 h-screen flex flex-col">
+      <div class="w-2/3 lg:min-w-56 bg-base-100 h-screen flex flex-col">
         <!-- 头像 -->
         <div class="flex-0 self-center avatar mt-4">
           <div class="bg-neutral text-neutral-content w-12 rounded-full">
@@ -79,25 +79,41 @@
           </div>
         </div>
         <!-- 聊天列表 -->
-         <div class="mx-4 my-2 text-neutral-400 flex justify-between">
+        <div class="mx-4 my-2 text-neutral-400 flex justify-between">
           <span>会话列表</span>
           <!-- <a>新建</a> -->
-         </div>
+        </div>
         <div class="overflow-y-auto flex-grow">
           <ul class="menu rounded-box">
-            <li v-for="(c, i) in chatStore.chatConversations" :key="c.name" class="text-xl cursor-pointer"
-              @click="switchConversation(i)">
-              <a class="flex" :class="{ 'focus': chatStore.currentConversationIndex === i }">
-                <span>{{ c.name }}</span>
-                <a v-if="c.type == 'private'" class="badge badge-xs">用户</a>
-                <span v-if="c.type == 'group'" class="badge badge-xs">群聊</span>
+            <li class="text-xl lg:cursor-pointer flex" v-for="(c, i) in chatStore.chatConversations" :key="c.name">
+              <a class="flex flex-1" :class="{ 'focus': chatStore.currentConversationIndex === i }">
+                <div class="flex-1" @click="switchConversation(i)">
+                  <span>{{ c.name }}</span>
+                  <span v-if="c.type == 'private'" class="badge badge-xs">用户</span>
+                  <span v-if="c.type == 'group'" class="badge badge-xs">群聊</span>
+                </div>
+                <div>
+                  <details v-if="chatStore.currentConversationIndex === i"
+                    class="dropdown dropdown-bottom dropdown-end">
+                    <summary class="btn btn-xs btn-ghost btn-square flex justify-center">
+                      <svg width="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg"
+                        class="icon-md">
+                        <path fill-rule="evenodd" clip-rule="evenodd"
+                          d="M3 12C3 10.8954 3.89543 10 5 10C6.10457 10 7 10.8954 7 12C7 13.1046 6.10457 14 5 14C3.89543 14 3 13.1046 3 12ZM10 12C10 10.8954 10.8954 10 12 10C13.1046 10 14 10.8954 14 12C14 13.1046 13.1046 14 12 14C10.8954 14 10 13.1046 10 12ZM17 12C17 10.8954 17.8954 10 19 10C20.1046 10 21 10.8954 21 12C21 13.1046 20.1046 14 19 14C17.8954 14 17 13.1046 17 12Z"
+                          fill="currentColor"></path>
+                      </svg>
+                    </summary>
+                    <ul class="dropdown-content menu bg-base-100 rounded-box z-[1] w-40 p-2 shadow">
+                      <li><a @click="openModalDeleteConversation($event)">删除</a></li>
+                    </ul>
+                  </details>
+                </div>
               </a>
             </li>
           </ul>
         </div>
         <!-- 注销 -->
-        <div class="flex flex-none lg:flex-col justify-around mb-2">
-          <button class="self-center btn btn-ghost btn-square">退出</button>
+        <div class="flex flex-none justify-around my-2">
           <button class="self-center btn btn-ghost btn-square">注销</button>
           <!-- 主题切换 -->
           <label class="swap mt-2">
@@ -118,7 +134,7 @@
       </div>
     </div>
   </div>
-  <!-- 用户搜索框 -->
+  <!-- 用户搜索弹窗 -->
   <input type="checkbox" id="modal_search" ref="modalSearch" class="modal-toggle" />
   <div class="modal" role="dialog" ref="modal">
     <div class="modal-box -z-1 w-5/6 flex flex-col items-center justify-center gap-6">
@@ -158,6 +174,22 @@
     </div>
     <!-- 屏罩 -->
     <label class="modal-backdrop" for="modal_search" @click="searchResults.length = 0">Close</label>
+  </div>
+  <!-- 会话删除确认弹窗 -->
+  <input type="checkbox" id="modal_delete_conversation" ref="modalDeleteConversation" class="modal-toggle" />
+  <div class="modal" role="dialog" ref="modal">
+    <div class="modal-box -z-1 w-5/6 flex flex-col items-center justify-center gap-6">
+      <div class="text-2xl">是否删除会话？</div>
+      <div class="text-gray-400">此操作会清空本地聊天记录</div>
+      <div class="flex justify-between w-full">
+        <!-- 关闭 -->
+        <div class="btn btn-ghost" @click="closeModalDeleteConversation">关闭</div>
+        <!-- 确认 -->
+        <div class="btn btn-neutral" @click="deleteCurrentConversation">确认</div>
+      </div>
+    </div>
+    <!-- 屏罩 -->
+    <label class="modal-backdrop" for="modal_delete_conversation"></label>
   </div>
 </template>
 
@@ -203,10 +235,10 @@ const toggleTheme = () => {
 
 // 用户搜索框
 const modalSearch = ref();
-const openModal = () => {
+const openModalSearch = () => {
   modalSearch.value.checked = true;
 };
-const closeModal = () => {
+const closeModalSearch = () => {
   modalSearch.value.checked = false;
 };
 
@@ -229,7 +261,7 @@ const searchUserByName = async () => {
 }
 const newConversation = (nickname, publickey, type) => {
   const index = chatStore.addConversation(nickname, publickey, type);
-  closeModal();
+  closeModalSearch();
   switchConversation(index);
   console.log('add: ', index)
 }
@@ -266,5 +298,19 @@ const copyToClipboard = async (event, text) => {
   parentElement.setAttribute('data-tip', '已复制');
   setTimeout(() => parentElement.setAttribute('data-tip', '复制'), 1000);
   await navigator.clipboard.writeText(text);
+}
+
+// 会话删除框
+const modalDeleteConversation = ref();
+const openModalDeleteConversation = (event) => {
+  event.target.parentElement.parentElement.parentElement.open = false;
+  modalDeleteConversation.value.checked = true;
+}
+const closeModalDeleteConversation = () => {
+  modalDeleteConversation.value.checked = false;
+}
+const deleteCurrentConversation = () => {
+  chatStore.deleteCurrentConversation();
+  closeModalDeleteConversation();
 }
 </script>

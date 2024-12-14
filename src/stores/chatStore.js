@@ -41,6 +41,11 @@ export const useChatStore = defineStore(
         status: 'Delivering',
       })
     }
+    const deleteCurrentConversation = () => {
+      chatConversations.value.splice(currentConversationIndex, 1);
+      if (chatConversations.value.length !== 0) currentConversationIndex.value = 0;
+      else currentConversationIndex.value = null;
+    }
 
     return {
       chatConversations,
@@ -50,6 +55,7 @@ export const useChatStore = defineStore(
       setCurrentConversation,
       addConversation,
       addMessage,
+      deleteCurrentConversation,
     }
   },
   {
