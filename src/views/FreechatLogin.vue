@@ -1,9 +1,10 @@
 <template>
-  <div class="h-full w-screen flex flex-col justify-center items-center">
+  <div class="h-full w-screen flex flex-col justify-center items-center gap-10">
+    <div class="text-slate-500 text-2xl">Free Chat</div>
     <div class="w-60 flex flex-col justify-between items-center gap-4">
-      <input class="input" v-model="nickname" placeholder="输入昵称" />
-      <button class="btn w-full" @click="register">注册</button>
-      <button class="btn w-full" @click="handleDelete">注销</button>
+      <input class="input" v-model="nickname" placeholder="输入匿名" />
+      <button class="btn w-full btn-ghost" @click="register">开始聊天</button>
+      <!-- <button class="btn w-full" @click="handleDelete">注销</button> -->
     </div>
   </div>
 </template>
