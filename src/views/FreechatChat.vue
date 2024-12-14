@@ -64,14 +64,14 @@
         </div>
         <!-- 发送按钮 -->
         <div class="flex-none">
-          <button class="btn btn-ghost" @click="send">Send</button>
+          <button class="btn btn-ghost" @click="send">发送</button>
         </div>
       </div>
     </div>
     <!-- 侧边栏 -->
     <div class="drawer-side">
       <label for="my-drawer" aria-label="close sidebar" class="drawer-overlay"></label>
-      <div class="w-2/3 lg:min-w-40 bg-base-100 h-screen flex flex-col">
+      <div class="w-2/3 lg:min-w-48 bg-base-100 h-screen flex flex-col">
         <!-- 头像 -->
         <div class="flex-0 self-center avatar mt-4">
           <div class="bg-neutral text-neutral-content w-12 rounded-full">
@@ -79,12 +79,19 @@
           </div>
         </div>
         <!-- 聊天列表 -->
+         <div class="mx-4 my-2 text-neutral-400 flex justify-between">
+          <span>会话列表</span>
+          <!-- <a>新建</a> -->
+         </div>
         <div class="overflow-y-auto flex-grow">
           <ul class="menu rounded-box">
-            <li class="menu-title">会话列表</li>
             <li v-for="(c, i) in chatStore.chatConversations" :key="c.name" class="text-xl cursor-pointer"
               @click="switchConversation(i)">
-              <a :class="{ 'focus': chatStore.currentConversationIndex === i }">{{ c.name }}</a>
+              <a class="flex" :class="{ 'focus': chatStore.currentConversationIndex === i }">
+                <span>{{ c.name }}</span>
+                <a v-if="c.type == 'private'" class="badge badge-xs">用户</a>
+                <span v-if="c.type == 'group'" class="badge badge-xs">群聊</span>
+              </a>
             </li>
           </ul>
         </div>
@@ -115,26 +122,34 @@
   <input type="checkbox" id="modal_search" ref="modalSearch" class="modal-toggle" />
   <div class="modal" role="dialog" ref="modal">
     <div class="modal-box -z-1 w-5/6 flex flex-col items-center justify-center gap-6">
-      <div class="text-2xl">发起聊天</div>
-      <!-- 输入框 -->
-      <div class="flex justify-center items-center gap-4">
-        <input type="text" v-model="searchNickname" placeholder="输入昵称"
-          class="input w-full max-w-xs focus:border-none focus:ring-0" />
-        <!-- 搜索按钮 -->
-        <button class="btn btn-ghost" @click="searchUserByName">
-          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 16 16" fill="currentColor" class="h-4 w-4 opacity-70">
-            <path fill-rule="evenodd"
-              d="M9.965 11.026a5 5 0 1 1 1.06-1.06l2.755 2.754a.75.75 0 1 1-1.06 1.06l-2.755-2.754ZM10.5 7a3.5 3.5 0 1 1-7 0 3.5 3.5 0 0 1 7 0Z"
-              clip-rule="evenodd" />
-          </svg>
-        </button>
-      </div>
-      <!-- 结果 -->
-      <div class="flex-1 overflow-y-auto w-4/6 rounded-md">
-        <span class="loading-spinner loading-xs" :class="{ loading: isSearching }"></span>
-        <ul class="menu bg-base-100 p-0 [&_li>*]:rounded-md" v-for="r in searchResults" :key="r">
-          <li><a @click="newConversation(r.nickname, r.publicKey, 'private')">{{ r.nickname }}</a></li>
-        </ul>
+      <div class="text-2xl">发起新聊天</div>
+      <div class="flex flex-col gap-2">
+        <!-- 输入框 -->
+        <div class="flex justify-center items-center gap-4">
+          <input type="text" v-model="searchNickname" placeholder="输入昵称"
+            class="input w-full max-w-xs focus:border-none focus:ring-0" />
+          <!-- 搜索按钮 -->
+          <button class="btn btn-ghost" @click="searchUserByName">
+            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 16 16" fill="currentColor" class="h-4 w-4 opacity-70">
+              <path fill-rule="evenodd"
+                d="M9.965 11.026a5 5 0 1 1 1.06-1.06l2.755 2.754a.75.75 0 1 1-1.06 1.06l-2.755-2.754ZM10.5 7a3.5 3.5 0 1 1-7 0 3.5 3.5 0 0 1 7 0Z"
+                clip-rule="evenodd" />
+            </svg>
+          </button>
+        </div>
+        <!-- 结果 -->
+        <div class="flex-1 overflow-y-auto rounded-md">
+          <div class="flex justify-center">
+            <span class="loading-spinner loading-xs" :class="{ loading: isSearching }"></span>
+          </div>
+          <ul class="menu bg-base-100 p-0 [&_li>*]:rounded-md" v-for="r in searchResults" :key="r">
+            <li><a @click="newConversation(r.nickname, r.publicKey, r.type)">
+                <span>{{ r.nickname }}</span>
+                <span v-if="r.type == 'private'" class="badge badge-lg">用户</span>
+                <span v-if="r.type == 'group'" class="badge badge-lg">群聊</span>
+              </a></li>
+          </ul>
+        </div>
       </div>
       <!-- 关闭按钮 -->
       <div class="modal-action">
