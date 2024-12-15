@@ -28,8 +28,8 @@
         <div class="my-2 mx-2" v-for="m in chatStore.currentMessages" :key="m">
           <div v-if="m.sender != userStore.nickname" class="chat chat-start">
             <div class="chat-image avatar">
-              <div class="w-10 rounded-full bg-base-300 text-center">
-                {{ m.sender }}
+              <div class="w-10 rounded-full bg-base-300">
+                <div class="h-10 text-center flex items-center justify-center">{{ m.sender }}</div>
               </div>
             </div>
             <div class="chat-header">
@@ -37,15 +37,15 @@
             </div>
             <div data-tip="复制" class="tooltip tooltip-accent">
               <button @click="copyToClipboard($event, m.content)"
-                class="btn h-max cursor-copy font-mono font-light max-w-xs lg:max-w-2xl break-words chat-bubble">
+                class="btn h-max cursor-copy font-mono font-light max-w-64 lg:max-w-2xl break-words chat-bubble">
                 {{ m.content }}
               </button>
             </div>
           </div>
           <div v-else class="chat chat-end">
             <div class="chat-image avatar">
-              <div class="w-10 rounded-full bg-base-300 text-center">
-                {{ m.sender }}
+              <div class="w-10 rounded-full bg-base-300">
+                <div class="h-10 text-center flex items-center justify-center">{{ m.sender }}</div>
               </div>
             </div>
             <div class="chat-header">
@@ -53,7 +53,7 @@
             </div>
             <div data-tip="复制" class="tooltip tooltip-accent">
               <button @click="copyToClipboard($event, m.content)"
-                class="btn h-max cursor-copy font-mono font-light max-w-xs lg:max-w-2xl break-words chat-bubble">
+                class="btn h-max cursor-copy font-mono font-light max-w-64 lg:max-w-2xl break-words chat-bubble">
                 {{ m.content }}
               </button>
             </div>
@@ -80,7 +80,7 @@
         <!-- 头像 -->
         <div class="flex-0 self-center avatar mt-4">
           <div class="bg-neutral text-neutral-content w-12 rounded-full">
-            <span class="text-2xl">{{ userStore.nickname }}</span>
+            <div class="text-2xl h-10 text-center flex items-center justify-center">{{ userStore.nickname }}</div>
           </div>
         </div>
         <!-- 聊天列表 -->
@@ -300,9 +300,6 @@ const switchConversation = (index) => {
 
 // 复制消息
 const copyToClipboard = async (event, text) => {
-  const parentElement = event.target.parentElement;
-  parentElement.setAttribute('data-tip', '已复制');
-  setTimeout(() => parentElement.setAttribute('data-tip', '复制'), 1000);
   await navigator.clipboard.writeText(text);
 }
 
