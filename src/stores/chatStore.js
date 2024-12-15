@@ -24,6 +24,8 @@ export const useChatStore = defineStore(
       const index = chatConversations.value?.findIndex((c) => c.name === name)
       if (index !== undefined  && index !== -1) return index
 
+      if (chatConversations.value === null) chatConversations.value = [];
+
       const len = chatConversations.value.push({
         newMessageCount: 0,
         name: name,
