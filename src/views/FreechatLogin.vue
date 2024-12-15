@@ -1,10 +1,22 @@
 <template>
-  <div class="h-full w-screen flex flex-col justify-center items-center gap-10">
-    <div class="text-slate-500 text-2xl">Free Chat</div>
-    <div class="w-60 flex flex-col justify-between items-center gap-4">
-      <input class="input" v-model="nickname" placeholder="输入匿名" />
-      <button class="btn w-full btn-ghost" @click="register">开始聊天</button>
-      <!-- <button class="btn w-full" @click="handleDelete">注销</button> -->
+  <div class="hero bg-base-200 min-h-screen">
+    <div class="hero-content flex-col lg:flex-row lg:justify-center lg:gap-10">
+      <div class="text-center md:w-4/5 lg:text-left lg:w-2/5">
+        <h1 class="text-5xl font-bold">常聊!</h1>
+        <p class="py-6 text-slate-400">
+          欢迎来！输入匿名开启端对端加密畅聊！
+        </p>
+      </div>
+      <div class="card bg-base-100 w-full max-w-sm shrink-0 shadow-2xl">
+        <div class="card-body">
+          <div class="form-control">
+            <input type="input" v-model="nickname" placeholder="输入匿名" class="input input-bordered" required />
+          </div>
+          <div class="form-control mt-6">
+            <button class="btn btn-primary" @click="register">开始聊天</button>
+          </div>
+        </div>
+      </div>
     </div>
   </div>
 </template>
@@ -58,8 +70,8 @@ const register = async () => {
 
     router.push('/chat');
   } catch (error) {
-    console.error('注册失败:', error.response?.data || error.message);
-    $toast.error(`注册失败: ${error.response?.data || error.message}`, { duration: 30000 });
+    console.error('注册失败:', error?.data.message || error);
+    $toast.error(`注册失败: ${error?.data.message || error}`, { duration: 30000 });
     userStore.clearUserData();
   }
 };
