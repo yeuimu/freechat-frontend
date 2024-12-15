@@ -35,7 +35,12 @@
             <div class="chat-header">
               <time v-if="m.create" class="text-xs opacity-50">{{ m.create }}</time>
             </div>
-            <div class="max-w-xs lg:max-w-2xl break-words chat-bubble">{{ m.content }}</div>
+            <div data-tip="复制" class="tooltip tooltip-accent">
+              <button @click="copyToClipboard($event, m.content)"
+                class="btn h-max cursor-copy font-mono font-light max-w-xs lg:max-w-2xl break-words chat-bubble">
+                {{ m.content }}
+              </button>
+            </div>
           </div>
           <div v-else class="chat chat-end">
             <div class="chat-image avatar">
@@ -51,11 +56,10 @@
                 class="btn h-max cursor-copy font-mono font-light max-w-xs lg:max-w-2xl break-words chat-bubble">
                 {{ m.content }}
               </button>
-              <!-- <div class="max-w-xs lg:max-w-2xl break-words chat-bubble">{{ m.content }}</div> -->
             </div>
           </div>
         </div>
-        <div v-if="isNewMessage" @click="toTopMessageArea" class="sticky bottom-0 flex justify-center"><button class="btn btn-xs btn-ghost">新消息</button></div>
+        <div v-if="isNewMessage" @click="toTopMessageArea" class="sticky bottom-0 flex justify-center"><button class="btn btn-xs btn-info">新消息</button></div>
       </div>
       <!-- 输入区域 -->
       <div class="flex items-center">
@@ -317,8 +321,8 @@ const deleteCurrentConversation = () => {
 }
 
 // 新消息提醒
-const isNewMessage = ref(false);
-watch(chatStore.currentMessages, () => {
+const isNewMessage = ref();
+watch(chatStore.currentMessages, (n, o) => {
   console.log("有新消息来了！");
   const clientHeight = messageArea.value.clientHeight;
   const scrollTop = messageArea.value.scrollTop;
@@ -328,7 +332,7 @@ watch(chatStore.currentMessages, () => {
   // console.log(clientHeight + scrollTop);
   // console.log(`总高度：${scrollHeight}`);
   // console.log(scrollHeight - clientHeight - scrollTop);
-  if (scrollHeight - clientHeight - scrollTop > 72) {
+  if (scrollHeight - clientHeight - scrollTop > 72 && n[n.length - 1].sender !== userStore.nickname) {
     isNewMessage.value = true;
     setTimeout(() => isNewMessage.value = false, 5000);
   }
