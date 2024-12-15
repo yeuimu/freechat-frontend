@@ -44,7 +44,7 @@ export const searchUser = (nickname, signature, query) => {
  * @returns {Promise} Axios 请求 Promise
  */
 export const deleteUser = (nickname, signature) => {
-  return apiClient.delete(`/user/delete/${nickname}`, { data: { signature } })
+  return apiClient.post(`/user/delete`, { data: { nickname, signature } })
 }
 
 /**

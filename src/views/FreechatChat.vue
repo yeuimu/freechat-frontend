@@ -59,7 +59,8 @@
             </div>
           </div>
         </div>
-        <div v-if="isNewMessage" @click="toTopMessageArea" class="sticky bottom-0 flex justify-center"><button class="btn btn-xs btn-info">新消息</button></div>
+        <div v-if="isNewMessage" @click="toTopMessageArea" class="sticky bottom-0 flex justify-center"><button
+            class="btn btn-xs btn-info">新消息</button></div>
       </div>
       <!-- 输入区域 -->
       <div class="flex items-center">
@@ -93,9 +94,12 @@
             <li class="text-xl lg:cursor-pointer flex" v-for="(c, i) in chatStore.chatConversations" :key="c.name">
               <a class="flex flex-1" :class="{ 'focus': chatStore.currentConversationIndex === i }">
                 <div class="flex-1" @click="switchConversation(i)">
-                  <span>{{ c.name }}</span>
-                  <span v-if="c.type == 'private'" class="badge badge-xs">用户</span>
-                  <span v-if="c.type == 'group'" class="badge badge-xs">群聊</span>
+                  <div class="indicator">
+                    <span class="indicator-item badge badge-secondary badge-xs indicator-top indicator-end" v-if="c.newMessageCount !== 0">+{{ c.newMessageCount }}</span>
+                    <span>{{ c.name }}</span>
+                  </div>
+                  <span v-if="c.type == 'private'" class="badge badge-xs badge-ghost ml-8">私</span>
+                  <span v-if="c.type == 'group'" class="badge badge-xs">群</span>
                 </div>
                 <div>
                   <details v-if="chatStore.currentConversationIndex === i"
@@ -294,8 +298,9 @@ const closeDrawer = () => {
   if (drawer.value == true) drawer.value = false;
 }
 const switchConversation = (index) => {
-  chatStore.setCurrentConversation(index)
-  closeDrawer()
+  chatStore.setCurrentConversation(index);
+  chatStore.clearCurrentNewMessageCount(index);
+  closeDrawer();
 }
 
 // 复制消息

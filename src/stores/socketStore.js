@@ -102,13 +102,18 @@ export const useSocketStore = defineStore('socket', () => {
       chatStore.currentConversation.name == sender &&
       chatStore.currentConversation.type == type
     ) {
+      // 当前对话
       if (newMessage.sender !== userStore.nickname)
         chatStore.currentConversation.messages.push(newMessage)
     } else {
+      // 非当前对话
       if (chatStore.chatConversations.some((c) => c.name == sender)) {
+        // 非当前对话，但对话列表有此对话
         const c = chatStore.chatConversations.find((c) => c.name == sender)
         c.messages.push(newMessage)
+        c.newMessageCount = c.newMessageCount + 1;
       } else {
+        // 对话列表没有此对话
         const res = await publickeyUser(userStore.nickname, await userStore.signature, sender)
         let index = 0
         if (res.publicKey) {
@@ -116,7 +121,9 @@ export const useSocketStore = defineStore('socket', () => {
         } else {
           Error(`Not found public key of ${sender}`)
         }
-        chatStore.chatConversations[index].messages.push(newMessage)
+        const c = chatStore.chatConversations[index];
+        c.messages.push(newMessage);
+        c.newMessageCount = c.newMessageCount + 1;
       }
       $toast.info(`${sender} 来了一条新消息`, { duration: 10000 })
     }

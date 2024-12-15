@@ -4,7 +4,7 @@ import { computed, ref } from 'vue'
 export const useChatStore = defineStore(
   'chat',
   () => {
-    // { [ { name: string, type: string, messages: [[{ sender: string, content: string, create: Date, id: string, status: string }]], publickey: string } ] }
+    // { [ { newMessageCount: number, name: string, type: string, messages: [[{ sender: string, content: string, create: Date, id: string, status: string }]], publickey: string } ] }
     const chatConversations = ref([])
     // number
     const currentConversationIndex = ref(null)
@@ -25,6 +25,7 @@ export const useChatStore = defineStore(
       if (index !== undefined  && index !== -1) return index
 
       const len = chatConversations.value.push({
+        newMessageCount: 0,
         name: name,
         type,
         messages: [],
@@ -39,13 +40,14 @@ export const useChatStore = defineStore(
         create,
         id: '',
         status: 'Delivering',
-      })
+      });
     }
     const deleteCurrentConversation = () => {
       chatConversations.value.splice(currentConversationIndex, 1);
       if (chatConversations.value.length !== 0) currentConversationIndex.value = 0;
       else currentConversationIndex.value = null;
     }
+    const clearCurrentNewMessageCount = () => currentConversation.value.newMessageCount = 0;
 
     return {
       chatConversations,
@@ -56,6 +58,7 @@ export const useChatStore = defineStore(
       addConversation,
       addMessage,
       deleteCurrentConversation,
+      clearCurrentNewMessageCount
     }
   },
   {
