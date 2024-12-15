@@ -30,6 +30,13 @@ export const useUserStore = defineStore(
       privateKey.value = null
     }
 
+    const deleteUserInfo = () => {
+      nickname.value = null;
+      publicKey.value = null;
+      privateKey.value = null;
+      id.value = null;
+    }
+
     return {
       nickname,
       publicKey,
@@ -37,6 +44,7 @@ export const useUserStore = defineStore(
       setNickname,
       clearUserData,
       generateKeys,
+      deleteUserInfo,
       signature,
     }
   },

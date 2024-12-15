@@ -48,6 +48,10 @@ export const useChatStore = defineStore(
       else currentConversationIndex.value = null;
     }
     const clearCurrentNewMessageCount = () => currentConversation.value.newMessageCount = 0;
+    const deleteAllConversations = () => {
+    chatConversations.value = null;
+    currentConversationIndex.value = null;
+    }
 
     return {
       chatConversations,
@@ -58,7 +62,8 @@ export const useChatStore = defineStore(
       addConversation,
       addMessage,
       deleteCurrentConversation,
-      clearCurrentNewMessageCount
+      clearCurrentNewMessageCount,
+      deleteAllConversations
     }
   },
   {

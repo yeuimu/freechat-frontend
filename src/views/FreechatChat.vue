@@ -63,21 +63,19 @@
             class="btn btn-xs btn-info">新消息</button></div>
       </div>
       <!-- 输入区域 -->
-      <div class="flex items-center">
+      <div class="flex items-center border-t-0 bg-base-200">
         <div class="flex-1">
-          <textarea class="w-full h-32 textarea-lg bg-base-100 rounded-xl focus:outline-none resize-none"
+          <textarea class="w-full h-32 textarea-lg bg-base-200 rounded-xl focus:outline-none resize-none"
             placeholder="输入消息" v-model="messageInput"></textarea>
         </div>
         <!-- 发送按钮 -->
-        <div class="flex-none">
-          <button class="btn btn-ghost" @click="sendMessage">发送</button>
-        </div>
+        <button class="btn btn-neutral btn-lg mr-4" @click="sendMessage">发送</button>
       </div>
     </div>
     <!-- 侧边栏 -->
     <div class="drawer-side">
       <label for="my-drawer" aria-label="close sidebar" class="drawer-overlay"></label>
-      <div class="w-2/3 lg:min-w-56 bg-base-100 h-screen flex flex-col">
+      <div class="w-2/3 lg:min-w-56 bg-base-100 h-screen flex flex-col lg:bg-base-200">
         <!-- 头像 -->
         <div class="flex-0 self-center avatar mt-4">
           <div class="bg-neutral text-neutral-content w-12 rounded-full">
@@ -95,7 +93,8 @@
               <a class="flex flex-1" :class="{ 'focus': chatStore.currentConversationIndex === i }">
                 <div class="flex-1" @click="switchConversation(i)">
                   <div class="indicator">
-                    <span class="indicator-item badge badge-secondary badge-xs indicator-top indicator-end" v-if="c.newMessageCount !== 0">+{{ c.newMessageCount }}</span>
+                    <span class="indicator-item badge badge-secondary badge-xs indicator-top indicator-end"
+                      v-if="c.newMessageCount !== 0">+{{ c.newMessageCount }}</span>
                     <span>{{ c.name }}</span>
                   </div>
                   <span v-if="c.type == 'private'" class="badge badge-xs badge-ghost ml-8">私</span>
@@ -123,7 +122,7 @@
         </div>
         <!-- 注销 -->
         <div class="flex flex-none justify-around my-2">
-          <button class="self-center btn btn-ghost btn-square">注销</button>
+          <button class="self-center btn btn-ghost btn-square" @click="openModalDeleteUser">注销</button>
           <!-- 主题切换 -->
           <label class="swap mt-2">
             <!-- this hidden checkbox controls the state -->
@@ -200,11 +199,29 @@
     <!-- 屏罩 -->
     <label class="modal-backdrop" for="modal_delete_conversation"></label>
   </div>
+  <!-- 注销确认弹窗 -->
+  <input type="checkbox" id="modal_delete_user" ref="modalDeleteUser" class="modal-toggle" />
+  <div class="modal" role="dialog" ref="modal">
+    <div class="modal-box -z-1 w-5/6 flex flex-col items-center justify-center gap-6">
+      <div class="text-2xl">是否注销账号？</div>
+      <div class="text-gray-400">此操作会清空本地聊天记录并且删除远程服务器账号信息</div>
+      <div class="flex justify-between w-full">
+        <!-- 关闭 -->
+        <div class="btn btn-ghost" @click="closeModalDeleteUser">关闭</div>
+        <!-- 确认 -->
+        <div class="btn btn-neutral" @click="userDelete">确认</div>
+      </div>
+    </div>
+    <!-- 屏罩 -->
+    <label class="modal-backdrop" for="modal_delete_user"></label>
+  </div>
 </template>
 
 <script setup>
 import { ref, onMounted, watch } from 'vue'
-import { searchUser } from '@/api/userApi';
+import { searchUser, deleteUser } from '@/api/userApi';
+import { useRouter } from 'vue-router'
+const router = useRouter();
 
 import { useToast } from 'vue-toast-notification';
 import 'vue-toast-notification/dist/theme-sugar.css';
@@ -329,11 +346,6 @@ watch(chatStore.currentMessages, (n, o) => {
   const clientHeight = messageArea.value.clientHeight;
   const scrollTop = messageArea.value.scrollTop;
   const scrollHeight = messageArea.value.scrollHeight;
-  // console.log(clientHeight);
-  // console.log(scrollTop);
-  // console.log(clientHeight + scrollTop);
-  // console.log(`总高度：${scrollHeight}`);
-  // console.log(scrollHeight - clientHeight - scrollTop);
   if (scrollHeight - clientHeight - scrollTop > 72 && n[n.length - 1].sender !== userStore.nickname) {
     isNewMessage.value = true;
     setTimeout(() => isNewMessage.value = false, 5000);
@@ -346,4 +358,39 @@ const toTopMessageArea = () => {
   setTimeout(() => messageArea.value.scrollTop = messageArea.value.scrollHeight, 100);
   isNewMessage.value = false;
 }
+
+// 注销删除框
+const modalDeleteUser = ref();
+const openModalDeleteUser = (event) => {
+  event.target.parentElement.parentElement.parentElement.open = false;
+  modalDeleteUser.value.checked = true;
+}
+const closeModalDeleteUser = () => {
+  modalDeleteUser.value.checked = false;
+}
+
+// 注销方法
+const userDelete = async () => {
+  try {
+    closeModalDeleteUser();
+
+    // 生成签名
+    const signature = await userStore.signature;
+
+    // 调用注销 API
+    const res = await deleteUser(userStore.nickname, signature, userStore.publicKey);
+    userStore.clearUserData();
+
+    // 销毁用户信息
+    userStore.deleteUserInfo();
+    chatStore.deleteAllConversations();
+
+    $toast.success(`注销成功`);
+    console.log('注销成功:', res.message);
+    router.push('/');
+  } catch (error) {
+    $toast.error(`注销失败`);
+    console.error('注销失败:', error?.data.message || error);
+  }
+};
 </script>

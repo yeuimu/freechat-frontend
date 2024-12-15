@@ -13,7 +13,7 @@
             <input type="input" v-model="nickname" placeholder="输入匿名" class="input input-bordered" required />
           </div>
           <div class="form-control mt-6">
-            <button class="btn btn-primary" @click="register">开始聊天</button>
+            <button class="btn btn-neutral" @click="register">开始聊天</button>
           </div>
         </div>
       </div>
@@ -36,23 +36,6 @@ const $toast = useToast();
 const userStore = useUserStore();
 const nickname = ref('');
 const router = useRouter();
-
-// 注销方法
-const handleDelete = async () => {
-  try {
-    // console.log(`private key: ${userStore.privateKey}`);
-    // 生成签名
-    const signature = await userStore.generateSignature;
-
-    // 调用注销 API
-    const response = await deleteUser(nickname.value, signature);
-    userStore.clearUserData();
-
-    console.log('注销成功:', response.message);
-  } catch (error) {
-    console.error('注销失败:', error.response?.data || error.message);
-  }
-};
 
 // 注册方法
 const register = async () => {
