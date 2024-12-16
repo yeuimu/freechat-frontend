@@ -342,11 +342,7 @@ const deleteCurrentConversation = () => {
 // 新消息提醒
 const isNewMessage = ref(false);
 watch(chatStore.currentMessages, (n, o) => {
-  console.log("有新消息来了！");
-  const clientHeight = messageArea.value.clientHeight;
-  const scrollTop = messageArea.value.scrollTop;
-  const scrollHeight = messageArea.value.scrollHeight;
-  if (scrollHeight - clientHeight - scrollTop > 72 && n[n.length - 1].sender !== userStore.nickname) {
+  if (messageArea.value.scrollTop !== messageArea.value.scrollHeight && n[n.length - 1].sender !== userStore.nickname) {
     isNewMessage.value = true;
     setTimeout(() => isNewMessage.value = false, 5000);
   }
