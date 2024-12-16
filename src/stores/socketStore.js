@@ -39,7 +39,7 @@ export const useSocketStore = defineStore('socket', () => {
 
     // 收到消息后
     socket.value.on('message', async ({ type, sender, id, create, content }) => {
-      console.log({ type, sender, id, create, content })
+      // console.log({ type, sender, id, create, content })
       await receiveMessage(type, sender, id, create, content)
     })
 

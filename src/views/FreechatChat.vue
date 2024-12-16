@@ -340,7 +340,7 @@ const deleteCurrentConversation = () => {
 }
 
 // 新消息提醒
-const isNewMessage = ref();
+const isNewMessage = ref(false);
 watch(chatStore.currentMessages, (n, o) => {
   console.log("有新消息来了！");
   const clientHeight = messageArea.value.clientHeight;
