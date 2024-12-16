@@ -51,7 +51,7 @@ export const useChatStore = defineStore(
     }
     const clearCurrentNewMessageCount = () => currentConversation.value.newMessageCount = 0;
     const deleteAllConversations = () => {
-    chatConversations.value = null;
+    chatConversations.value = [];
     currentConversationIndex.value = null;
     }
 
