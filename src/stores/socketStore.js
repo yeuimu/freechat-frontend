@@ -85,6 +85,7 @@ export const useSocketStore = defineStore('socket', () => {
         // 注销
         case 6:
           console.log(6)
+          chatStore.chatConversations[indexConv].status = 'logout'
           break
       }
     })
@@ -193,9 +194,9 @@ export const useSocketStore = defineStore('socket', () => {
       })
   }, 10000)
 
-  setInterval(() => {
-    socket.value.emit('test', { recipient: chatStore.currentConversation.name})
-  }, 5000)
+  // setInterval(() => {
+  //   socket.value.emit('test', { recipient: chatStore.currentConversation.name})
+  // }, 5000)
 
   return { initSocket, sendMessage, joinGroup, whoSendNewMessage, connected }
 })
