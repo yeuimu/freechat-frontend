@@ -44,9 +44,49 @@ export const useSocketStore = defineStore('socket', () => {
     })
 
     // 收到响应后
-    socket.value.on('respond', ({ code, message, toMessage }) => {
-      console.log(code, message, toMessage)
-      const { create, id } = toMessage
+    socket.value.on('respond', ({ code, message, info }) => {
+      console.log(code, message)
+      const { create, recipient } = info
+      const indexConv =
+        chatStore.currentConversation.name === info.recipient
+          ? chatStore.currentConversationIndex
+          : chatStore.chatConversations.findIndex((c) => c.name === recipient)
+
+      if (info.create) {
+        console.log(create, recipient)
+        const indexMeg =
+          chatStore.currentConversation.name === recipient
+            ? chatStore.currentMessages.findIndex((m) => m.create === create)
+            : chatStore.chatConversations[indexConv].findIndex((m) => m.create === create)
+        console.log(indexConv, indexMeg)
+
+        switch (code) {
+          case 2:
+            chatStore.chatConversations[indexConv].messages[indexMeg].status = 'Delivered' // 对方收到
+            break
+          case 3:
+            chatStore.chatConversations[indexConv].messages[indexMeg].status = 'Failed' // 对方注销
+            chatStore.chatConversations[indexConv].status = 'logout'
+            break
+        }
+      }
+
+      switch (code) {
+        // 在线
+        case 4:
+          chatStore.chatConversations[indexConv].status = 'online'
+          console.log(4)
+          break
+        // 离线
+        case 5:
+          chatStore.chatConversations[indexConv].status = 'offline'
+          console.log(5)
+          break
+        // 注销
+        case 6:
+          console.log(6)
+          break
+      }
     })
 
     // 收到错误后
@@ -69,10 +109,10 @@ export const useSocketStore = defineStore('socket', () => {
    * @param {Date} create
    */
   const sendMessage = async (type, recipient, content, create) => {
-    console.log(type, recipient, content, create)
+    // console.log(type, recipient, content, create)
     const publickey = chatStore.chatConversations.find((c) => c.name === recipient)?.publickey
     const { cipherText, encryptedKey, iv } = await hybridEncrypt(content, publickey)
-    console.log(cipherText)
+    // console.log(cipherText)
     socket.value.emit('message', {
       type,
       recipient,
@@ -97,6 +137,7 @@ export const useSocketStore = defineStore('socket', () => {
       content: decryptedContent,
       id,
       create: new Date(create).toLocaleString('zh-cn'),
+      status: 'Delivered',
     }
     if (
       chatStore.currentConversation.name == sender &&
@@ -111,7 +152,7 @@ export const useSocketStore = defineStore('socket', () => {
         // 非当前对话，但对话列表有此对话
         const c = chatStore.chatConversations.find((c) => c.name == sender)
         c.messages.push(newMessage)
-        c.newMessageCount = c.newMessageCount + 1;
+        c.newMessageCount = c.newMessageCount + 1
       } else {
         // 对话列表没有此对话
         const res = await publickeyUser(userStore.nickname, await userStore.signature, sender)
@@ -121,9 +162,9 @@ export const useSocketStore = defineStore('socket', () => {
         } else {
           Error(`Not found public key of ${sender}`)
         }
-        const c = chatStore.chatConversations[index];
-        c.messages.push(newMessage);
-        c.newMessageCount = c.newMessageCount + 1;
+        const c = chatStore.chatConversations[index]
+        c.messages.push(newMessage)
+        c.newMessageCount = c.newMessageCount + 1
       }
       $toast.info(`${sender} 来了一条新消息`, { duration: 10000 })
     }
@@ -136,6 +177,25 @@ export const useSocketStore = defineStore('socket', () => {
   const joinGroup = (groupId) => {
     socket.value.emit('join', groupId)
   }
+
+  setInterval(() => {
+    if (chatStore.chatConversations)
+      chatStore.chatConversations.map((c) => {
+        setTimeout(() => {
+          console.log('Fetch status...')
+          if (c.status !== 'logout') {
+            socket.value.emit('status', {
+              recipient: c.name,
+              publicKey: c.publickey,
+            })
+          }
+        }, 1000)
+      })
+  }, 10000)
+
+  setInterval(() => {
+    socket.value.emit('test', { recipient: chatStore.currentConversation.name})
+  }, 5000)
 
   return { initSocket, sendMessage, joinGroup, whoSendNewMessage, connected }
 })

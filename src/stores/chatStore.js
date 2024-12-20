@@ -4,7 +4,7 @@ import { computed, ref } from 'vue'
 export const useChatStore = defineStore(
   'chat',
   () => {
-    // { [ { newMessageCount: number, name: string, type: string, messages: [[{ sender: string, content: string, create: Date, id: string, status: string }]], publickey: string } ] }
+    // { [ { status: 'logout' | 'normal', newMessageCount: number, name: string, type: string, messages: [[{ sender: string, content: string, create: Date, id: string, status: string }]], publickey: string } ] }
     const chatConversations = ref([])
     // number
     const currentConversationIndex = ref(null)

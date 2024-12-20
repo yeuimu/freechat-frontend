@@ -9,6 +9,7 @@ export const useUserStore = defineStore(
     const publicKey = ref(null)
     const privateKey = ref(null)
     const id = ref(null)
+    const history = ref([]) // [{nickname, publicKey}]
 
     const generateKeys = async () => {
       const { pub, pri } = await generatePemKeyPair()

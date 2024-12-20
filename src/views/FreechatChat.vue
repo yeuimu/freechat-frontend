@@ -15,9 +15,13 @@
           </label>
         </div>
         <!-- 对话名 -->
-        <div class="flex-1">
+        <div class="flex-1 flex gap-0">
           <a class="btn btn-ghost text-xl">{{ chatStore.currentConversation.name }}</a>
+          <span v-if="chatStore.currentConversation.status" class="badge badge-xs"
+            :class="{ 'badge-error': chatStore.currentConversation.status === 'logout', 'badge-accent': chatStore.currentConversation.status === 'online' }">{{
+              chatStore.currentConversation.status }}</span>
         </div>
+        <!-- 新对话按钮 -->
         <div class="flex-none">
           <button class="lg:ml-4 text-xl btn btn-square btn-ghost" @click="openModalSearch">+</button>
         </div>
@@ -26,22 +30,32 @@
       <div class="flex-grow overflow-y-auto flex-col" ref="messageArea">
         <!-- 消息列表 -->
         <div class="my-2 mx-2" v-for="m in chatStore.currentMessages" :key="m">
+          <!-- 左边 -->
           <div v-if="m.sender != userStore.nickname" class="chat chat-start">
+            <!-- 头像 -->
             <div class="chat-image avatar">
               <div class="w-10 rounded-full bg-base-300">
                 <div class="h-10 text-center flex items-center justify-center">{{ m.sender }}</div>
               </div>
             </div>
+            <!-- 时间 -->
             <div class="chat-header">
               <time v-if="m.create" class="text-xs opacity-50">{{ m.create }}</time>
             </div>
+            <!-- 内容 -->
             <div data-tip="复制" class="tooltip tooltip-accent">
               <button @click="copyToClipboard($event, m.content)"
                 class="btn h-max cursor-copy font-mono font-light max-w-64 lg:max-w-2xl break-words chat-bubble">
                 {{ m.content }}
               </button>
             </div>
+            <!-- 脚注 -->
+            <div class="chat-footer"
+              :class="{ 'text-slate-400': m.status === 'Delivering', 'text-red-400': m.status === 'Failed' }">
+              {{ m.status }}
+            </div>
           </div>
+          <!-- 右边 -->
           <div v-else class="chat chat-end">
             <div class="chat-image avatar">
               <div class="w-10 rounded-full bg-base-300">
@@ -56,6 +70,11 @@
                 class="btn h-max cursor-copy font-mono font-light max-w-64 lg:max-w-2xl break-words chat-bubble">
                 {{ m.content }}
               </button>
+            </div>
+            <!-- 脚注 -->
+            <div class="chat-footer"
+              :class="{ 'text-slate-400': m.status === 'Delivering', 'text-red-400': m.status === 'Failed' }">
+              {{ m.status }}
             </div>
           </div>
         </div>
@@ -97,8 +116,11 @@
                       v-if="c.newMessageCount !== 0">+{{ c.newMessageCount }}</span>
                     <span>{{ c.name }}</span>
                   </div>
-                  <span v-if="c.type == 'private'" class="badge badge-xs badge-ghost ml-8">私</span>
-                  <span v-if="c.type == 'group'" class="badge badge-xs">群</span>
+                  <span v-if="chatStore.currentConversation.status" class="badge badge-xs ml-4"
+                    :class="{ 'badge-error': chatStore.currentConversation.status === 'logout', 'badge-accent': chatStore.currentConversation.status === 'online' }">{{
+                      chatStore.currentConversation.status }}</span>
+                  <!-- <span v-if="c.type == 'private'" class="badge badge-xs badge-ghost ml-8">私</span>
+                  <span v-if="c.type == 'group'" class="badge badge-xs">群</span> -->
                 </div>
                 <div>
                   <details v-if="chatStore.currentConversationIndex === i"
@@ -296,13 +318,13 @@ const newConversation = (nickname, publickey, type) => {
 const messageInput = ref('');
 const sendMessage = async () => {
   // if (!messageInput.value.trim()) return;
-  console.log(messageInput.value);
+  // console.log(messageInput.value);
   const create = new Date();
   await socketStore.sendMessage(
     chatStore.currentConversation.type, // 'private' 或 'group'
     chatStore.currentConversation.name,
     messageInput.value,
-    create,
+    create.toLocaleString('zh-cn'),
   )
   chatStore.addMessage(userStore.nickname, messageInput.value, create.toLocaleString('zh-cn'));
   messageInput.value = ''
@@ -342,6 +364,7 @@ const deleteCurrentConversation = () => {
 // 新消息提醒
 const isNewMessage = ref(false);
 watch(chatStore.currentMessages, (n, o) => {
+  // console.log("有新消息了！")
   if (messageArea.value.scrollTop !== messageArea.value.scrollHeight && n[n.length - 1].sender !== userStore.nickname) {
     isNewMessage.value = true;
     setTimeout(() => isNewMessage.value = false, 5000);
